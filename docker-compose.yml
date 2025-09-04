@@ -1,0 +1,91 @@
+version: '3.8'
+
+services:
+  # Hosted Platform (Main Web Interface)
+  platform:
+    build: ./hosted-platform
+    ports:
+      - "3000:3000"
+      - "3001:3001"  # WebSocket
+    environment:
+      - NODE_ENV=development
+      - PORT=3000
+      - WS_PORT=3001
+      - DATABASE_URL=sqlite:./platform.db
+      - REDIS_URL=redis://redis:6379
+    volumes:
+      - ./hosted-platform:/app
+      - /app/node_modules
+    depends_on:
+      - redis
+      - ollama
+    command: npm start
+
+  # MCP Template Processor Service
+  mcp:
+    build: ./mcp
+    ports:
+      - "4000:4000"
+    environment:
+      - NODE_ENV=development
+      - PORT=4000
+      - DATABASE_URL=sqlite:./template_processor.db
+    volumes:
+      - ./mcp:/app
+      - /app/node_modules
+
+  # Document Parser Service (if needed separately)
+  # parser:
+  #   build: ./document-parser
+  #   ports:
+  #     - "4001:4001"
+  #   volumes:
+  #     - ./document-parser:/app
+
+  # Redis for caching
+  redis:
+    image: redis:alpine
+    ports:
+      - "6379:6379"
+
+  # Ollama for local AI (optional)
+  ollama:
+    image: ollama/ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+    # Pre-pull required models
+    command: >
+      sh -c "ollama serve &
+             sleep 5 &&
+             ollama pull codellama:7b &&
+             ollama pull mistral &&
+             wait"
+
+  # PostgreSQL for production (optional, comment out for SQLite)
+  # postgres:
+  #   image: postgres:15-alpine
+  #   environment:
+  #     POSTGRES_DB: aibuilder
+  #     POSTGRES_USER: aibuilder
+  #     POSTGRES_PASSWORD: secretpassword
+  #   ports:
+  #     - "5432:5432"
+  #   volumes:
+  #     - postgres_data:/var/lib/postgresql/data
+
+  # Nginx reverse proxy (optional for production)
+  # nginx:
+  #   image: nginx:alpine
+  #   ports:
+  #     - "80:80"
+  #   volumes:
+  #     - ./nginx.conf:/etc/nginx/nginx.conf
+  #   depends_on:
+  #     - platform
+  #     - mcp
+
+volumes:
+  ollama_data:
+  postgres_data:

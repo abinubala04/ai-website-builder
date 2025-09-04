@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My AI Chat</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: #f0f2f5;
+        }
+        
+        .chat-container {
+            width: 90%;
+            max-width: 500px;
+            height: 600px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        
+        .chat-header {
+            background: #4a90e2;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .message {
+            padding: 10px 15px;
+            border-radius: 18px;
+            max-width: 80%;
+            word-wrap: break-word;
+        }
+        
+        .user-message {
+            align-self: flex-end;
+            background: #4a90e2;
+            color: white;
+        }
+        
+        .ai-message {
+            align-self: flex-start;
+            background: #e9ecef;
+            color: #333;
+        }
+        
+        .chat-input {
+            display: flex;
+            padding: 20px;
+            border-top: 1px solid #e9ecef;
+            gap: 10px;
+        }
+        
+        input {
+            flex: 1;
+            padding: 10px 15px;
+            border: 1px solid #ddd;
+            border-radius: 25px;
+            font-size: 16px;
+            outline: none;
+        }
+        
+        input:focus {
+            border-color: #4a90e2;
+        }
+        
+        button {
+            padding: 10px 20px;
+            background: #4a90e2;
+            color: white;
+            border: none;
+            border-radius: 25px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        
+        button:hover {
+            background: #357abd;
+        }
+        
+        .typing {
+            display: none;
+            align-self: flex-start;
+            padding: 10px 15px;
+            background: #e9ecef;
+            border-radius: 18px;
+            margin: 10px 0;
+        }
+        
+        .typing span {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #999;
+            margin: 0 2px;
+            animation: typing 1.4s infinite;
+        }
+        
+        .typing span:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+        
+        .typing span:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+        
+        @keyframes typing {
+            0%, 60%, 100% {
+                transform: translateY(0);
+            }
+            30% {
+                transform: translateY(-10px);
+            }
+        }
+        
+        .info-banner {
+            background: #fff3cd;
+            color: #856404;
+            padding: 10px;
+            text-align: center;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="chat-container">
+        <div class="chat-header">
+            <h2>🤖 My AI Assistant</h2>
+            <p style="font-size: 14px; opacity: 0.9;">Version 1: Basic Responses</p>
+        </div>
+        
+        <div class="info-banner">
+            💡 This is a working chat! It responds with pre-written messages for now.
+        </div>
+        
+        <div class="chat-messages" id="messages">
+            <div class="message ai-message">
+                Hi! I'm your AI assistant. I can respond to your messages!
+            </div>
+        </div>
+        
+        <div class="typing" id="typing">
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+        
+        <div class="chat-input">
+            <input type="text" id="userInput" placeholder="Type a message..." autofocus>
+            <button onclick="sendMessage()">Send</button>
+        </div>
+    </div>
+
+    <script>
+        // Simple responses - no AI yet, just showing it works!
+        const responses = [
+            "That's interesting! Tell me more.",
+            "I understand. What else is on your mind?",
+            "Great question! Let me think about that.",
+            "Thanks for sharing that with me!",
+            "Hmm, I see what you mean.",
+            "That makes sense. What do you think?",
+            "Interesting perspective!",
+            "I appreciate you telling me that.",
+            "Let's explore that idea further.",
+            "Can you elaborate on that?"
+        ];
+        
+        let responseIndex = 0;
+        
+        // Handle enter key
+        document.getElementById('userInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+        
+        function sendMessage() {
+            const input = document.getElementById('userInput');
+            const message = input.value.trim();
+            
+            if (!message) return;
+            
+            // Add user message
+            addMessage(message, 'user');
+            
+            // Clear input
+            input.value = '';
+            
+            // Show typing indicator
+            const typing = document.getElementById('typing');
+            typing.style.display = 'block';
+            
+            // Simulate thinking time
+            setTimeout(() => {
+                typing.style.display = 'none';
+                
+                // Get next response (cycles through the list)
+                const response = responses[responseIndex];
+                responseIndex = (responseIndex + 1) % responses.length;
+                
+                // Add AI response
+                addMessage(response, 'ai');
+            }, 1000 + Math.random() * 1000); // 1-2 seconds
+        }
+        
+        function addMessage(text, sender) {
+            const messages = document.getElementById('messages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${sender}-message`;
+            messageDiv.textContent = text;
+            messages.appendChild(messageDiv);
+            
+            // Scroll to bottom
+            messages.scrollTop = messages.scrollHeight;
+        }
+        
+        // Fun easter egg
+        console.log(`
+🎉 Congratulations! You have a working chat app!
+
+This is Version 1 - it responds with pre-written messages.
+Open the HTML file to see how it works.
+
+Next: We'll make it smarter by adding pattern matching!
+        `);
+    </script>
+</body>
+</html>

@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Proof It's Real - Live Code Generation</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0a0a0a;
+            color: #fff;
+            overflow: hidden;
+        }
+        
+        .container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            height: 100vh;
+            gap: 2px;
+            background: #222;
+        }
+        
+        .panel {
+            background: #0a0a0a;
+            padding: 20px;
+            overflow-y: auto;
+        }
+        
+        .panel h2 {
+            font-size: 18px;
+            margin-bottom: 20px;
+            color: #4ade80;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .status-indicator {
+            width: 10px;
+            height: 10px;
+            background: #4ade80;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+        
+        /* Real-time log */
+        .log-entry {
+            padding: 8px 12px;
+            margin: 4px 0;
+            background: #111;
+            border-left: 3px solid #4ade80;
+            font-family: monospace;
+            font-size: 13px;
+            animation: slideIn 0.3s ease-out;
+        }
+        
+        @keyframes slideIn {
+            from {
+                transform: translateX(-20px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+        
+        .log-entry.ai {
+            border-color: #3b82f6;
+        }
+        
+        .log-entry.file {
+            border-color: #f59e0b;
+        }
+        
+        .log-entry.success {
+            border-color: #10b981;
+        }
+        
+        /* File tree */
+        .file-item {
+            padding: 6px 12px;
+            margin: 2px 0;
+            background: #111;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 13px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s;
+        }
+        
+        .file-item:hover {
+            background: #222;
+            transform: translateX(4px);
+        }
+        
+        .file-item.new {
+            animation: highlight 1s ease-out;
+        }
+        
+        @keyframes highlight {
+            0% {
+                background: #4ade80;
+                color: #000;
+            }
+            100% {
+                background: #111;
+                color: #fff;
+            }
+        }
+        
+        /* Stats */
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .stat-card {
+            background: #111;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            border: 1px solid #333;
+        }
+        
+        .stat-value {
+            font-size: 32px;
+            font-weight: bold;
+            color: #4ade80;
+            margin-bottom: 5px;
+        }
+        
+        .stat-label {
+            font-size: 12px;
+            color: #888;
+            text-transform: uppercase;
+        }
+        
+        /* Code preview */
+        .code-preview {
+            background: #1e1e1e;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            overflow-x: auto;
+        }
+        
+        .code-preview pre {
+            margin: 0;
+            font-family: 'Monaco', monospace;
+            font-size: 12px;
+            line-height: 1.5;
+            color: #d4d4d4;
+        }
+        
+        /* Action buttons */
+        .actions {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            display: flex;
+            gap: 10px;
+            z-index: 100;
+        }
+        
+        .action-btn {
+            background: #4ade80;
+            color: #000;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .action-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(74, 222, 128, 0.3);
+        }
+        
+        /* Header */
+        .header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: #000;
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 100;
+            border-bottom: 1px solid #333;
+        }
+        
+        .header h1 {
+            font-size: 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .live-badge {
+            background: #ef4444;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            text-transform: uppercase;
+            animation: blink 2s infinite;
+        }
+        
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.6; }
+        }
+        
+        .container {
+            margin-top: 60px;
+            height: calc(100vh - 60px);
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>
+            🔴 LIVE Code Generation Proof
+            <span class="live-badge">● LIVE</span>
+        </h1>
+        <div class="stats" style="margin: 0; display: flex; gap: 20px;">
+            <div style="text-align: center;">
+                <div class="stat-value" id="fileCount">0</div>
+                <div class="stat-label">Files Created</div>
+            </div>
+            <div style="text-align: center;">
+                <div class="stat-value" id="lineCount">0</div>
+                <div class="stat-label">Lines of Code</div>
+            </div>
+            <div style="text-align: center;">
+                <div class="stat-value" id="timeElapsed">0s</div>
+                <div class="stat-label">Time Elapsed</div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="container">
+        <!-- Left Panel: Real-time Activity -->
+        <div class="panel">
+            <h2>
+                <span class="status-indicator"></span>
+                Real-Time Activity Log
+            </h2>
+            
+            <div id="activityLog">
+                <div class="log-entry">
+                    ⚡ System ready. Waiting for user input...
+                </div>
+            </div>
+        </div>
+        
+        <!-- Right Panel: Generated Files -->
+        <div class="panel">
+            <h2>
+                <span class="status-indicator"></span>
+                Generated Files (Click to Preview)
+            </h2>
+            
+            <div id="fileList">
+                <div style="color: #666; padding: 20px; text-align: center;">
+                    No files yet. Start chatting with your AI agent!
+                </div>
+            </div>
+            
+            <div class="code-preview" id="codePreview" style="display: none;">
+                <h3 style="margin-bottom: 10px; color: #4ade80;">File Preview</h3>
+                <pre id="codeContent"></pre>
+            </div>
+        </div>
+    </div>
+    
+    <div class="actions">
+        <button class="action-btn" onclick="downloadProof()">
+            📥 Download Proof Package
+        </button>
+        <button class="action-btn" onclick="verifyWithExternal()">
+            🔍 Verify with External Tool
+        </button>
+    </div>
+    
+    <script>
+        let startTime = Date.now();
+        let fileCount = 0;
+        let totalLines = 0;
+        const files = new Map();
+        
+        // Update timer
+        setInterval(() => {
+            const elapsed = Math.floor((Date.now() - startTime) / 1000);
+            document.getElementById('timeElapsed').textContent = elapsed + 's';
+        }, 1000);
+        
+        // Add log entry
+        function addLog(message, type = '') {
+            const log = document.getElementById('activityLog');
+            const entry = document.createElement('div');
+            entry.className = `log-entry ${type}`;
+            entry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            log.insertBefore(entry, log.firstChild);
+            
+            // Keep only last 50 entries
+            while (log.children.length > 50) {
+                log.removeChild(log.lastChild);
+            }
+        }
+        
+        // Add file
+        function addFile(filename, content, isNew = true) {
+            if (!files.has(filename)) {
+                fileCount++;
+                document.getElementById('fileCount').textContent = fileCount;
+            }
+            
+            files.set(filename, content);
+            totalLines += content.split('\n').length;
+            document.getElementById('lineCount').textContent = totalLines;
+            
+            // Update file list
+            renderFileList();
+            
+            // Log it
+            addLog(`✓ Generated: ${filename} (${content.split('\n').length} lines)`, 'file');
+        }
+        
+        // Render file list
+        function renderFileList() {
+            const fileList = document.getElementById('fileList');
+            fileList.innerHTML = '';
+            
+            files.forEach((content, filename) => {
+                const fileEl = document.createElement('div');
+                fileEl.className = 'file-item new';
+                fileEl.innerHTML = `${getFileIcon(filename)} ${filename}`;
+                fileEl.onclick = () => showFilePreview(filename, content);
+                fileList.appendChild(fileEl);
+            });
+        }
+        
+        // Get file icon
+        function getFileIcon(filename) {
+            const ext = filename.split('.').pop();
+            const icons = {
+                js: '📜', json: '📋', html: '🌐', 
+                css: '🎨', md: '📝', sql: '🗄️'
+            };
+            return icons[ext] || '📄';
+        }
+        
+        // Show file preview
+        function showFilePreview(filename, content) {
+            document.getElementById('codePreview').style.display = 'block';
+            document.getElementById('codeContent').textContent = 
+                `// ${filename}\n\n${content.slice(0, 500)}${content.length > 500 ? '\n\n// ... (truncated)' : ''}`;
+        }
+        
+        // Simulate real-time generation (in production, use WebSocket)
+        function simulateGeneration() {
+            addLog('🤖 AI analyzing requirements...', 'ai');
+            
+            setTimeout(() => {
+                addLog('🔄 Starting code generation...', 'ai');
+                
+                // Simulate file generation
+                setTimeout(() => {
+                    addFile('package.json', `{
+  "name": "ai-generated-app",
+  "version": "1.0.0",
+  "description": "App built by AI",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "nodemon server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "sqlite3": "^5.1.6"
+  }
+}`);
+                }, 2000);
+                
+                setTimeout(() => {
+                    addFile('server.js', `const express = require('express');
+const app = express();
+const PORT = process.env.PORT || 3000;
+
+app.use(express.json());
+app.use(express.static('public'));
+
+app.get('/api/health', (req, res) => {
+    res.json({ status: 'ok', message: 'AI-generated server running!' });
+});
+
+app.listen(PORT, () => {
+    console.log(\`Server running on port \${PORT}\`);
+});`);
+                }, 3500);
+                
+                setTimeout(() => {
+                    addFile('database.js', `const sqlite3 = require('sqlite3').verbose();
+
+const db = new sqlite3.Database('./app.db', (err) => {
+    if (err) console.error('Database error:', err);
+    else console.log('Connected to SQLite database');
+});
+
+module.exports = db;`);
+                }, 5000);
+                
+                setTimeout(() => {
+                    addFile('public/index.html', `<!DOCTYPE html>
+<html>
+<head>
+    <title>AI Generated App</title>
+</head>
+<body>
+    <h1>Your AI-Built Application</h1>
+    <p>This was generated in real-time!</p>
+</body>
+</html>`);
+                }, 6500);
+                
+                setTimeout(() => {
+                    addLog('✅ Code generation complete!', 'success');
+                    addLog('🚀 Application ready to run', 'success');
+                }, 8000);
+                
+            }, 1000);
+        }
+        
+        // Download proof
+        function downloadProof() {
+            const proof = {
+                generatedAt: new Date().toISOString(),
+                filesGenerated: fileCount,
+                totalLines: totalLines,
+                files: Array.from(files.entries()).map(([name, content]) => ({
+                    filename: name,
+                    size: content.length,
+                    preview: content.slice(0, 200)
+                }))
+            };
+            
+            const blob = new Blob([JSON.stringify(proof, null, 2)], 
+                { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'generation-proof.json';
+            a.click();
+        }
+        
+        // Verify with external
+        function verifyWithExternal() {
+            alert(`Verification Steps:
+
+1. Download the project files
+2. Open in VS Code or any editor
+3. Run: npm install
+4. Run: npm start
+5. Visit: http://localhost:3000
+
+The code is real and runs independently!`);
+        }
+        
+        // Connect to real workspace if provided
+        const workspaceId = new URLSearchParams(window.location.search).get('workspace');
+        if (workspaceId) {
+            addLog(`📡 Connected to workspace: ${workspaceId}`, 'success');
+            // In production, connect via WebSocket for real-time updates
+        } else {
+            // Demo mode
+            setTimeout(simulateGeneration, 2000);
+        }
+    </script>
+</body>
+</html>

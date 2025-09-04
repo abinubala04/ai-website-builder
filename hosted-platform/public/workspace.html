@@ -1,0 +1,666 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>AI Workspace - Build Real Apps</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+            background: #f5f5f5;
+            color: #333;
+            height: 100vh;
+            overflow: hidden;
+        }
+        
+        /* Layout */
+        .workspace {
+            display: grid;
+            grid-template-columns: 350px 1fr 1fr;
+            grid-template-rows: 50px 1fr;
+            height: 100vh;
+            gap: 1px;
+            background: #ddd;
+        }
+        
+        /* Header */
+        .header {
+            grid-column: 1 / -1;
+            background: white;
+            display: flex;
+            align-items: center;
+            padding: 0 20px;
+            border-bottom: 1px solid #e0e0e0;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        .header h1 {
+            font-size: 18px;
+            font-weight: 600;
+            margin-right: 20px;
+        }
+        .project-name {
+            font-size: 16px;
+            color: #666;
+            margin-right: auto;
+        }
+        .header-actions {
+            display: flex;
+            gap: 10px;
+        }
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+        .btn-primary:hover {
+            background: #5a5ed8;
+        }
+        .btn-secondary {
+            background: #f0f0f0;
+            color: #666;
+        }
+        .btn-secondary:hover {
+            background: #e0e0e0;
+        }
+        
+        /* Chat Panel */
+        .chat-panel {
+            background: white;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+        }
+        .message {
+            margin-bottom: 20px;
+            animation: slideIn 0.3s;
+        }
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        .message-user {
+            display: flex;
+            justify-content: flex-end;
+        }
+        .message-content {
+            max-width: 80%;
+            padding: 12px 16px;
+            border-radius: 12px;
+            line-height: 1.5;
+        }
+        .message-user .message-content {
+            background: #667eea;
+            color: white;
+        }
+        .message-ai .message-content {
+            background: #f0f0f0;
+            color: #333;
+        }
+        .chat-input {
+            padding: 20px;
+            border-top: 1px solid #e0e0e0;
+        }
+        .input-wrapper {
+            display: flex;
+            gap: 10px;
+        }
+        .chat-input input {
+            flex: 1;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+        .chat-input input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        .send-btn {
+            padding: 12px 24px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+        .send-btn:hover {
+            background: #5a5ed8;
+            transform: translateY(-1px);
+        }
+        .send-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        
+        /* Code Editor */
+        .code-panel {
+            background: #1e1e1e;
+            display: flex;
+            flex-direction: column;
+        }
+        .editor-tabs {
+            background: #2d2d2d;
+            display: flex;
+            padding: 0;
+            overflow-x: auto;
+            min-height: 40px;
+        }
+        .tab {
+            padding: 10px 20px;
+            background: none;
+            color: #ccc;
+            border: none;
+            cursor: pointer;
+            border-right: 1px solid #444;
+            white-space: nowrap;
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 13px;
+        }
+        .tab.active {
+            background: #1e1e1e;
+            color: white;
+        }
+        .tab:hover {
+            background: #383838;
+        }
+        .editor {
+            flex: 1;
+            padding: 20px;
+            overflow: auto;
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 14px;
+            line-height: 1.6;
+            color: #d4d4d4;
+        }
+        #code-editor {
+            width: 100%;
+            height: 100%;
+            background: none;
+            border: none;
+            color: #d4d4d4;
+            resize: none;
+            outline: none;
+            font-family: inherit;
+            font-size: inherit;
+            line-height: inherit;
+        }
+        
+        /* Preview Panel */
+        .preview-panel {
+            background: white;
+            display: flex;
+            flex-direction: column;
+        }
+        .preview-header {
+            padding: 10px 20px;
+            background: #f8f8f8;
+            border-bottom: 1px solid #e0e0e0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .preview-url {
+            flex: 1;
+            padding: 6px 12px;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 13px;
+            color: #666;
+        }
+        .preview-refresh {
+            padding: 6px 12px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 13px;
+        }
+        #preview {
+            flex: 1;
+            border: none;
+            width: 100%;
+        }
+        
+        /* AI Thinking */
+        .thinking {
+            display: none;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 16px;
+            background: #f0f0f0;
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+        .thinking.show {
+            display: flex;
+        }
+        .thinking-dot {
+            width: 8px;
+            height: 8px;
+            background: #667eea;
+            border-radius: 50%;
+            animation: bounce 1.4s infinite;
+        }
+        .thinking-dot:nth-child(2) { animation-delay: 0.2s; }
+        .thinking-dot:nth-child(3) { animation-delay: 0.4s; }
+        @keyframes bounce {
+            0%, 60%, 100% { transform: translateY(0); }
+            30% { transform: translateY(-10px); }
+        }
+        
+        /* Status */
+        .status {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            padding: 12px 20px;
+            background: #4caf50;
+            color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            display: none;
+            animation: slideUp 0.3s;
+        }
+        .status.show { display: block; }
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="workspace">
+        <!-- Header -->
+        <div class="header">
+            <h1>AI Workspace</h1>
+            <div class="project-name" id="projectName">Loading project...</div>
+            <div class="header-actions">
+                <button class="btn btn-secondary" onclick="exportProject()">Export</button>
+                <button class="btn btn-secondary" onclick="window.location.href='/dashboard'">Back to Dashboard</button>
+            </div>
+        </div>
+        
+        <!-- Chat Panel -->
+        <div class="chat-panel">
+            <div class="chat-messages" id="chat">
+                <div class="message message-ai">
+                    <div class="message-content">
+                        👋 Hi! I'm your AI assistant. Tell me what you want to build and I'll help you create it!
+                        
+                        Try saying something like:
+                        • "Create a landing page for a startup"
+                        • "Build a todo list app"
+                        • "Make a portfolio website"
+                    </div>
+                </div>
+            </div>
+            
+            <div class="thinking" id="thinking">
+                <div class="thinking-dot"></div>
+                <div class="thinking-dot"></div>
+                <div class="thinking-dot"></div>
+                <span>AI is thinking...</span>
+            </div>
+            
+            <div class="chat-input">
+                <div class="input-wrapper">
+                    <input type="text" id="chatInput" placeholder="Describe what you want to build..." onkeypress="handleKeyPress(event)">
+                    <button class="send-btn" id="sendBtn" onclick="sendMessage()">Send</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Code Editor -->
+        <div class="code-panel">
+            <div class="editor-tabs" id="tabs">
+                <button class="tab active" onclick="switchTab('index.html')">index.html</button>
+            </div>
+            <div class="editor">
+                <textarea id="code-editor" spellcheck="false"></textarea>
+            </div>
+        </div>
+        
+        <!-- Preview Panel -->
+        <div class="preview-panel">
+            <div class="preview-header">
+                <input type="text" class="preview-url" value="preview://index.html" readonly>
+                <button class="preview-refresh" onclick="updatePreview()">Refresh</button>
+            </div>
+            <iframe id="preview"></iframe>
+        </div>
+    </div>
+    
+    <div class="status" id="status"></div>
+    
+    <script>
+        // Get project ID from URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const projectId = urlParams.get('project');
+        
+        // Current files
+        let files = {
+            'index.html': `<!DOCTYPE html>
+<html>
+<head>
+    <title>My Project</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            background: #f0f0f0;
+        }
+        .container {
+            text-align: center;
+            padding: 40px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Welcome to Your Project!</h1>
+        <p>Start building something amazing.</p>
+        <p>Ask the AI assistant for help!</p>
+    </div>
+</body>
+</html>`
+        };
+        
+        let currentFile = 'index.html';
+        let isProcessing = false;
+        
+        // Load project
+        async function loadProject() {
+            if (!projectId) {
+                showStatus('No project ID', 'error');
+                return;
+            }
+            
+            try {
+                const response = await fetch(`/api/projects/${projectId}/files`);
+                if (!response.ok) throw new Error('Failed to load project');
+                
+                const data = await response.json();
+                document.getElementById('projectName').textContent = data.project.name;
+                
+                // Load files
+                if (data.files && data.files.length > 0) {
+                    files = {};
+                    data.files.forEach(file => {
+                        files[file.name] = file.content;
+                    });
+                    
+                    // Update tabs
+                    updateTabs();
+                    
+                    // Show first file
+                    const firstFile = Object.keys(files)[0];
+                    switchTab(firstFile);
+                }
+                
+                updatePreview();
+            } catch (error) {
+                console.error('Error loading project:', error);
+                showStatus('Failed to load project', 'error');
+            }
+        }
+        
+        // Send message to AI
+        async function sendMessage() {
+            const input = document.getElementById('chatInput');
+            const message = input.value.trim();
+            
+            if (!message || isProcessing) return;
+            
+            // Add user message
+            addMessage(message, 'user');
+            input.value = '';
+            
+            // Show thinking
+            isProcessing = true;
+            document.getElementById('thinking').classList.add('show');
+            document.getElementById('sendBtn').disabled = true;
+            
+            try {
+                const response = await fetch('/api/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        message,
+                        projectId,
+                        context: {
+                            currentFile,
+                            files: Object.keys(files),
+                            currentCode: files[currentFile]
+                        }
+                    })
+                });
+                
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.error || 'AI service error');
+                }
+                
+                const data = await response.json();
+                
+                // Add AI response
+                addMessage(data.response, 'ai');
+                
+                // If AI generated code, update the editor
+                if (data.code) {
+                    // Detect what type of code it is
+                    if (data.code.includes('<!DOCTYPE html>') || data.code.includes('<html>')) {
+                        files['index.html'] = data.code;
+                        switchTab('index.html');
+                    } else if (data.code.includes('body {') || data.code.includes('.container')) {
+                        // It's CSS
+                        if (!files['styles.css']) {
+                            files['styles.css'] = data.code;
+                            updateTabs();
+                        } else {
+                            files['styles.css'] = data.code;
+                        }
+                        switchTab('styles.css');
+                    } else if (data.code.includes('function') || data.code.includes('const')) {
+                        // It's JavaScript
+                        if (!files['script.js']) {
+                            files['script.js'] = data.code;
+                            updateTabs();
+                        } else {
+                            files['script.js'] = data.code;
+                        }
+                        switchTab('script.js');
+                    } else {
+                        // Update current file
+                        files[currentFile] = data.code;
+                        document.getElementById('code-editor').value = data.code;
+                    }
+                    
+                    updatePreview();
+                    saveFile(currentFile);
+                }
+                
+                // Show remaining credits
+                if (data.credits_remaining !== undefined) {
+                    showStatus(`AI Credits: ${data.credits_remaining}`, 'info');
+                }
+                
+            } catch (error) {
+                console.error('Chat error:', error);
+                addMessage(`Error: ${error.message}`, 'ai');
+            } finally {
+                isProcessing = false;
+                document.getElementById('thinking').classList.remove('show');
+                document.getElementById('sendBtn').disabled = false;
+            }
+        }
+        
+        // Add message to chat
+        function addMessage(text, type) {
+            const chat = document.getElementById('chat');
+            const message = document.createElement('div');
+            message.className = `message message-${type}`;
+            
+            const content = document.createElement('div');
+            content.className = 'message-content';
+            content.textContent = text;
+            
+            message.appendChild(content);
+            chat.appendChild(message);
+            chat.scrollTop = chat.scrollHeight;
+        }
+        
+        // Handle code changes
+        document.getElementById('code-editor').addEventListener('input', () => {
+            files[currentFile] = document.getElementById('code-editor').value;
+            updatePreview();
+            
+            // Auto-save after 1 second of no typing
+            clearTimeout(window.saveTimeout);
+            window.saveTimeout = setTimeout(() => {
+                saveFile(currentFile);
+            }, 1000);
+        });
+        
+        // Save file to server
+        async function saveFile(fileName) {
+            try {
+                const response = await fetch('/api/files', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        projectId,
+                        fileName,
+                        content: files[fileName]
+                    })
+                });
+                
+                if (response.ok) {
+                    showStatus('Saved!', 'success');
+                }
+            } catch (error) {
+                console.error('Save error:', error);
+            }
+        }
+        
+        // Update preview
+        function updatePreview() {
+            const preview = document.getElementById('preview');
+            
+            // Create a complete HTML document
+            let html = files['index.html'] || '';
+            
+            // Inject CSS if exists
+            if (files['styles.css']) {
+                html = html.replace('</head>', `<style>${files['styles.css']}</style></head>`);
+            }
+            
+            // Inject JS if exists
+            if (files['script.js']) {
+                html = html.replace('</body>', `<script>${files['script.js']}</script></body>`);
+            }
+            
+            // Update preview
+            preview.srcdoc = html;
+        }
+        
+        // Switch tabs
+        function switchTab(fileName) {
+            currentFile = fileName;
+            
+            // Update tabs UI
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.toggle('active', tab.textContent === fileName);
+            });
+            
+            // Update editor
+            document.getElementById('code-editor').value = files[fileName] || '';
+        }
+        
+        // Update tabs
+        function updateTabs() {
+            const tabsContainer = document.getElementById('tabs');
+            tabsContainer.innerHTML = '';
+            
+            Object.keys(files).forEach(fileName => {
+                const tab = document.createElement('button');
+                tab.className = 'tab';
+                if (fileName === currentFile) tab.classList.add('active');
+                tab.textContent = fileName;
+                tab.onclick = () => switchTab(fileName);
+                tabsContainer.appendChild(tab);
+            });
+        }
+        
+        // Export project
+        function exportProject() {
+            const zip = files['index.html'];
+            const blob = new Blob([zip], { type: 'text/html' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'project.html';
+            a.click();
+            URL.revokeObjectURL(url);
+            showStatus('Project exported!', 'success');
+        }
+        
+        // Show status message
+        function showStatus(message, type = 'success') {
+            const status = document.getElementById('status');
+            status.textContent = message;
+            status.style.background = type === 'error' ? '#f44336' : type === 'info' ? '#2196f3' : '#4caf50';
+            status.classList.add('show');
+            
+            setTimeout(() => {
+                status.classList.remove('show');
+            }, 3000);
+        }
+        
+        // Handle enter key
+        function handleKeyPress(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        }
+        
+        // Initialize
+        loadProject();
+        document.getElementById('chatInput').focus();
+    </script>
+</body>
+</html>

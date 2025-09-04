@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Your Local AI Development Environment</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+            background: #0a0a0a;
+            color: #e0e0e0;
+            line-height: 1.6;
+        }
+        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+        
+        /* Header */
+        .header {
+            text-align: center;
+            padding: 40px 0;
+            border-bottom: 1px solid #333;
+            margin-bottom: 40px;
+        }
+        .header h1 {
+            font-size: 48px;
+            margin-bottom: 10px;
+            background: linear-gradient(45deg, #00ff88, #00aaff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .header p { font-size: 20px; color: #888; }
+        
+        /* Tool sections */
+        .tools { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; margin-bottom: 40px; }
+        @media (max-width: 900px) { .tools { grid-template-columns: 1fr; } }
+        
+        .tool {
+            background: #1a1a1a;
+            border-radius: 12px;
+            padding: 30px;
+            border: 1px solid #333;
+        }
+        .tool h2 {
+            font-size: 28px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .tool-icon { font-size: 32px; }
+        
+        /* Demo windows */
+        .demo-window {
+            background: #0d0d0d;
+            border: 1px solid #333;
+            border-radius: 8px;
+            overflow: hidden;
+            margin: 20px 0;
+        }
+        .window-bar {
+            background: #1a1a1a;
+            padding: 8px 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            border-bottom: 1px solid #333;
+        }
+        .window-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #444;
+        }
+        .window-dot.red { background: #ff5555; }
+        .window-dot.yellow { background: #ffff55; }
+        .window-dot.green { background: #55ff55; }
+        .window-title { flex: 1; text-align: center; font-size: 14px; color: #888; }
+        
+        .demo-content { padding: 20px; }
+        
+        /* Chat demo */
+        .chat-demo {
+            height: 300px;
+            display: flex;
+            flex-direction: column;
+        }
+        .messages {
+            flex: 1;
+            overflow-y: auto;
+            margin-bottom: 15px;
+        }
+        .message {
+            margin: 10px 0;
+            padding: 10px 15px;
+            border-radius: 8px;
+            max-width: 70%;
+        }
+        .user-msg {
+            background: #0066cc;
+            margin-left: auto;
+            text-align: right;
+        }
+        .llm-msg {
+            background: #2a2a2a;
+            border: 1px solid #444;
+        }
+        .chat-input {
+            display: flex;
+            gap: 10px;
+        }
+        .chat-input input {
+            flex: 1;
+            background: #2a2a2a;
+            border: 1px solid #444;
+            color: white;
+            padding: 10px;
+            border-radius: 6px;
+        }
+        .chat-input button {
+            background: #0066cc;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+        
+        /* Git demo */
+        .git-demo { display: flex; gap: 20px; height: 300px; }
+        .file-list {
+            width: 200px;
+            border-right: 1px solid #333;
+            padding-right: 20px;
+        }
+        .file-item {
+            padding: 8px 12px;
+            margin: 5px 0;
+            background: #2a2a2a;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+        .file-item.active { background: #0066cc; }
+        .editor-area { flex: 1; }
+        .code-editor {
+            background: #1e1e1e;
+            border: 1px solid #333;
+            border-radius: 6px;
+            padding: 15px;
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 14px;
+            height: 200px;
+            overflow-y: auto;
+            color: #e0e0e0;
+        }
+        .code { color: #ffa500; }
+        .string { color: #98c379; }
+        .keyword { color: #c678dd; }
+        
+        /* Features */
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        .feature {
+            background: #2a2a2a;
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid #333;
+        }
+        .feature h4 { margin-bottom: 8px; color: #00ff88; }
+        .feature p { font-size: 14px; color: #aaa; }
+        
+        /* Commands */
+        .commands {
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .commands h3 { margin-bottom: 15px; }
+        .command {
+            background: #0d0d0d;
+            padding: 12px;
+            border-radius: 6px;
+            margin: 10px 0;
+            font-family: monospace;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .copy-btn {
+            background: #333;
+            border: none;
+            color: #aaa;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+        .copy-btn:hover { background: #444; }
+        
+        /* Footer */
+        .footer {
+            text-align: center;
+            padding: 40px 0;
+            border-top: 1px solid #333;
+            margin-top: 60px;
+            color: #666;
+        }
+        .footer a { color: #00aaff; text-decoration: none; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Your Local AI Development Environment</h1>
+            <p>Build with AI, version control without complexity</p>
+        </div>
+        
+        <div class="tools">
+            <!-- LLM Course Tool -->
+            <div class="tool">
+                <h2><span class="tool-icon">🤖</span> LLM Course</h2>
+                <p>Build your own LLM and use it to create anything</p>
+                
+                <div class="demo-window">
+                    <div class="window-bar">
+                        <div class="window-dot red"></div>
+                        <div class="window-dot yellow"></div>
+                        <div class="window-dot green"></div>
+                        <div class="window-title">http://localhost:3000 - Chat with Your LLM</div>
+                    </div>
+                    <div class="demo-content">
+                        <div class="chat-demo">
+                            <div class="messages">
+                                <div class="message llm-msg">Hi! I'm the LLM you built. How can I help you code?</div>
+                                <div class="message user-msg">Help me build a todo app</div>
+                                <div class="message llm-msg">I'll help you create a todo app! Here's the HTML structure to start...</div>
+                            </div>
+                            <div class="chat-input">
+                                <input type="text" placeholder="Ask your LLM anything...">
+                                <button>Send</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="features">
+                    <div class="feature">
+                        <h4>✨ Your Own AI</h4>
+                        <p>Uses YOUR API keys (Ollama, OpenAI, Anthropic)</p>
+                    </div>
+                    <div class="feature">
+                        <h4>💻 Code Generation</h4>
+                        <p>Generates real, working code from descriptions</p>
+                    </div>
+                    <div class="feature">
+                        <h4>🚀 Progressive Learning</h4>
+                        <p>Build from simple chat to full applications</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Simple Git Platform -->
+            <div class="tool">
+                <h2><span class="tool-icon">📁</span> Simple Git Platform</h2>
+                <p>GitHub for normal people - no terminal required</p>
+                
+                <div class="demo-window">
+                    <div class="window-bar">
+                        <div class="window-dot red"></div>
+                        <div class="window-dot yellow"></div>
+                        <div class="window-dot green"></div>
+                        <div class="window-title">http://localhost:3000 - Simple Git Platform</div>
+                    </div>
+                    <div class="demo-content">
+                        <div class="git-demo">
+                            <div class="file-list">
+                                <h4>Files</h4>
+                                <div class="file-item active">index.html</div>
+                                <div class="file-item">style.css</div>
+                                <div class="file-item">app.js</div>
+                                <div class="file-item">package.json</div>
+                            </div>
+                            <div class="editor-area">
+                                <div class="code-editor">
+                                    <span class="keyword">const</span> <span class="code">app</span> = <span class="code">express</span>();<br>
+                                    <br>
+                                    app.<span class="code">get</span>(<span class="string">'/'</span>, (req, res) => {<br>
+                                    &nbsp;&nbsp;res.<span class="code">send</span>(<span class="string">'Hello World!'</span>);<br>
+                                    });
+                                </div>
+                                <button style="margin-top: 10px; background: #00cc66; color: white; border: none; padding: 8px 16px; border-radius: 6px;">Save Version</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="features">
+                    <div class="feature">
+                        <h4>👁️ Visual Everything</h4>
+                        <p>Edit code in browser, no terminal needed</p>
+                    </div>
+                    <div class="feature">
+                        <h4>📸 Simple Versions</h4>
+                        <p>Save snapshots, not commits. One click.</p>
+                    </div>
+                    <div class="feature">
+                        <h4>🤖 AI Helper</h4>
+                        <p>Generate code using YOUR AI models</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="commands">
+            <h3>🚀 Quick Start Commands</h3>
+            <div class="command">
+                <span>./start-local.sh</span>
+                <button class="copy-btn" onclick="copyText('./start-local.sh')">Copy</button>
+            </div>
+            <div class="command">
+                <span>node build-llm.js</span>
+                <button class="copy-btn" onclick="copyText('node build-llm.js')">Copy</button>
+            </div>
+            <div class="command">
+                <span>cd simple-git-platform && npm start</span>
+                <button class="copy-btn" onclick="copyText('cd simple-git-platform && npm start')">Copy</button>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <p>No tracking, no cloud dependency, no bullshit. Just tools that work locally with YOUR API keys.</p>
+            <p><a href="README-SIMPLE.md">View Documentation</a></p>
+        </div>
+    </div>
+    
+    <script>
+        function copyText(text) {
+            navigator.clipboard.writeText(text);
+            event.target.textContent = 'Copied!';
+            setTimeout(() => event.target.textContent = 'Copy', 2000);
+        }
+    </script>
+</body>
+</html>

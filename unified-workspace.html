@@ -1,0 +1,728 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>AI Workspace - Chat, Code, Create</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+            background: #0a0a0a;
+            color: #e0e0e0;
+            height: 100vh;
+            overflow: hidden;
+        }
+        
+        /* Layout */
+        .workspace {
+            display: grid;
+            grid-template-columns: 350px 1fr 1fr;
+            grid-template-rows: 50px 1fr 200px;
+            height: 100vh;
+            gap: 1px;
+            background: #333;
+        }
+        
+        /* Header */
+        .header {
+            grid-column: 1 / -1;
+            background: #1a1a1a;
+            display: flex;
+            align-items: center;
+            padding: 0 20px;
+            border-bottom: 1px solid #333;
+        }
+        .header h1 {
+            font-size: 18px;
+            font-weight: 500;
+            margin-right: auto;
+        }
+        .status {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 14px;
+        }
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #00ff00;
+        }
+        .status-dot.offline { background: #ff5555; }
+        
+        /* Chat Panel */
+        .chat-panel {
+            background: #1a1a1a;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        .chat-header {
+            padding: 15px;
+            border-bottom: 1px solid #333;
+            font-weight: 500;
+        }
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+        }
+        .message {
+            margin: 10px 0;
+            padding: 12px;
+            border-radius: 8px;
+            animation: fadeIn 0.3s;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .user-message {
+            background: #0066cc;
+            margin-left: 20px;
+            text-align: right;
+        }
+        .ai-message {
+            background: #2a2a2a;
+            margin-right: 20px;
+            border: 1px solid #444;
+        }
+        .chat-input-area {
+            padding: 15px;
+            border-top: 1px solid #333;
+        }
+        .chat-input {
+            display: flex;
+            gap: 10px;
+        }
+        .chat-input input {
+            flex: 1;
+            background: #2a2a2a;
+            border: 1px solid #444;
+            color: white;
+            padding: 10px;
+            border-radius: 6px;
+        }
+        .chat-input button {
+            background: #0066cc;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+        .chat-input button:hover { background: #0052a3; }
+        
+        /* Code Editor */
+        .code-panel {
+            background: #1e1e1e;
+            display: flex;
+            flex-direction: column;
+        }
+        .code-header {
+            background: #2a2a2a;
+            padding: 10px 15px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid #333;
+        }
+        .file-name {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .save-indicator {
+            font-size: 12px;
+            color: #888;
+        }
+        .save-indicator.unsaved { color: #ffa500; }
+        #code-editor {
+            flex: 1;
+            padding: 20px;
+            font-family: 'Monaco', 'Menlo', 'Consolas', monospace;
+            font-size: 14px;
+            line-height: 1.6;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            outline: none;
+        }
+        #code-editor[contenteditable] {
+            cursor: text;
+        }
+        .code-highlight { background: rgba(255, 255, 0, 0.2); }
+        
+        /* Preview Panel */
+        .preview-panel {
+            background: white;
+            display: flex;
+            flex-direction: column;
+        }
+        .preview-header {
+            background: #f0f0f0;
+            padding: 10px 15px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            color: #333;
+            border-bottom: 1px solid #ddd;
+        }
+        .preview-actions {
+            display: flex;
+            gap: 10px;
+        }
+        .preview-btn {
+            background: #666;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+        .preview-btn:hover { background: #555; }
+        #preview-frame {
+            flex: 1;
+            border: none;
+            background: white;
+        }
+        
+        /* Drawing Tools */
+        .tools-panel {
+            grid-column: 1 / -1;
+            background: #1a1a1a;
+            display: flex;
+            border-top: 1px solid #333;
+        }
+        .drawing-area {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            padding: 20px;
+            gap: 20px;
+        }
+        #drawing-canvas {
+            background: #2a2a2a;
+            border: 1px solid #444;
+            border-radius: 8px;
+            cursor: crosshair;
+        }
+        .drawing-tools {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .tool-btn {
+            background: #2a2a2a;
+            border: 1px solid #444;
+            color: white;
+            padding: 10px;
+            border-radius: 6px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .tool-btn:hover { background: #333; }
+        .tool-btn.active { background: #0066cc; border-color: #0066cc; }
+        
+        /* Color picker */
+        .color-picker {
+            display: flex;
+            gap: 5px;
+        }
+        .color-option {
+            width: 30px;
+            height: 30px;
+            border-radius: 4px;
+            cursor: pointer;
+            border: 2px solid transparent;
+        }
+        .color-option.selected { border-color: white; }
+        
+        /* Connection indicator */
+        .connection-line {
+            position: absolute;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #00ff00, transparent);
+            animation: pulse 2s infinite;
+            pointer-events: none;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 0; }
+            50% { opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+    <div class="workspace">
+        <!-- Header -->
+        <div class="header">
+            <h1>🚀 AI Workspace</h1>
+            <div class="status">
+                <span class="status-dot" id="ai-status"></span>
+                <span>AI: <span id="ai-model">Checking...</span></span>
+                <span>|</span>
+                <span id="save-status">All changes saved</span>
+            </div>
+        </div>
+        
+        <!-- Chat Panel -->
+        <div class="chat-panel">
+            <div class="chat-header">💬 Chat with AI</div>
+            <div class="chat-messages" id="chat-messages">
+                <div class="message ai-message">
+                    Hi! I'm your AI assistant. I can help you:
+                    <br>• Generate code from descriptions
+                    <br>• Modify code in real-time
+                    <br>• Understand your drawings
+                    <br>• Create interactive demos
+                    <br><br>Try: "Create a red button that counts clicks"
+                </div>
+            </div>
+            <div class="chat-input-area">
+                <div class="chat-input">
+                    <input type="text" id="chat-input" placeholder="Describe what you want to build..." autofocus>
+                    <button onclick="sendMessage()">Send</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Code Editor -->
+        <div class="code-panel">
+            <div class="code-header">
+                <div class="file-name">
+                    <span>📄</span>
+                    <span>index.html</span>
+                    <span class="save-indicator" id="save-indicator">• saved</span>
+                </div>
+                <button class="preview-btn" onclick="updatePreview()">▶ Run</button>
+            </div>
+            <div id="code-editor" contenteditable="true" spellcheck="false"><!DOCTYPE html>
+<html>
+<head>
+    <title>Your Creation</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            height: 100vh; 
+            margin: 0;
+            background: #f0f0f0;
+        }
+    </style>
+</head>
+<body>
+    <h1>Start building!</h1>
+</body>
+</html></div>
+        </div>
+        
+        <!-- Preview Panel -->
+        <div class="preview-panel">
+            <div class="preview-header">
+                <span>👁 Live Preview</span>
+                <div class="preview-actions">
+                    <button class="preview-btn" onclick="refreshPreview()">🔄 Refresh</button>
+                    <button class="preview-btn" onclick="openInNewTab()">🔗 Open</button>
+                </div>
+            </div>
+            <iframe id="preview-frame" srcdoc=""></iframe>
+        </div>
+        
+        <!-- Drawing/Tools Panel -->
+        <div class="tools-panel">
+            <div class="drawing-area">
+                <canvas id="drawing-canvas" width="400" height="160"></canvas>
+                <div class="drawing-tools">
+                    <button class="tool-btn active" onclick="selectTool('pen')">
+                        ✏️ Draw
+                    </button>
+                    <button class="tool-btn" onclick="selectTool('highlight')">
+                        🖍 Highlight
+                    </button>
+                    <button class="tool-btn" onclick="clearCanvas()">
+                        🗑 Clear
+                    </button>
+                    <button class="tool-btn" onclick="sendDrawing()">
+                        📤 Send to AI
+                    </button>
+                </div>
+                <div class="color-picker">
+                    <div class="color-option selected" style="background: #ffffff" onclick="selectColor('#ffffff')"></div>
+                    <div class="color-option" style="background: #ff0000" onclick="selectColor('#ff0000')"></div>
+                    <div class="color-option" style="background: #00ff00" onclick="selectColor('#00ff00')"></div>
+                    <div class="color-option" style="background: #0000ff" onclick="selectColor('#0000ff')"></div>
+                    <div class="color-option" style="background: #ffff00" onclick="selectColor('#ffff00')"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Global state
+        let ws = null;
+        let currentTool = 'pen';
+        let currentColor = '#ffffff';
+        let isDrawing = false;
+        let hasUnsavedChanges = false;
+        
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            initWebSocket();
+            initDrawing();
+            initCodeEditor();
+            updatePreview();
+            checkAIStatus();
+        });
+        
+        // WebSocket for real-time updates
+        function initWebSocket() {
+            try {
+                ws = new WebSocket('ws://localhost:8080');
+                ws.onopen = () => {
+                    console.log('Connected to orchestration server');
+                    document.getElementById('ai-status').classList.remove('offline');
+                };
+                ws.onmessage = (event) => {
+                    const data = JSON.parse(event.data);
+                    handleServerMessage(data);
+                };
+                ws.onclose = () => {
+                    document.getElementById('ai-status').classList.add('offline');
+                    setTimeout(initWebSocket, 3000); // Reconnect
+                };
+            } catch (error) {
+                console.log('WebSocket not available, using fallback');
+            }
+        }
+        
+        // Chat functionality
+        document.getElementById('chat-input').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') sendMessage();
+        });
+        
+        async function sendMessage() {
+            const input = document.getElementById('chat-input');
+            const message = input.value.trim();
+            if (!message) return;
+            
+            // Add user message
+            addMessage(message, 'user');
+            input.value = '';
+            
+            // Send to AI
+            try {
+                const response = await fetch('/api/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        message,
+                        context: {
+                            currentCode: document.getElementById('code-editor').textContent,
+                            hasDrawing: false
+                        }
+                    })
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    addMessage(data.response, 'ai');
+                    
+                    // If AI generated code, update editor
+                    if (data.code) {
+                        updateCode(data.code);
+                    }
+                } else {
+                    // Fallback for demo
+                    simulateAIResponse(message);
+                }
+            } catch (error) {
+                // Demo mode - simulate responses
+                simulateAIResponse(message);
+            }
+        }
+        
+        function addMessage(text, sender) {
+            const messagesDiv = document.getElementById('chat-messages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${sender}-message`;
+            messageDiv.textContent = text;
+            messagesDiv.appendChild(messageDiv);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+        
+        // Code editor
+        function initCodeEditor() {
+            const editor = document.getElementById('code-editor');
+            editor.addEventListener('input', () => {
+                hasUnsavedChanges = true;
+                document.getElementById('save-indicator').textContent = '• unsaved';
+                document.getElementById('save-indicator').classList.add('unsaved');
+                
+                // Auto-update preview after typing stops
+                clearTimeout(window.updateTimeout);
+                window.updateTimeout = setTimeout(() => {
+                    updatePreview();
+                    saveCode();
+                }, 1000);
+            });
+        }
+        
+        function updateCode(code) {
+            const editor = document.getElementById('code-editor');
+            editor.textContent = code;
+            updatePreview();
+            saveCode();
+        }
+        
+        function saveCode() {
+            hasUnsavedChanges = false;
+            document.getElementById('save-indicator').textContent = '• saved';
+            document.getElementById('save-indicator').classList.remove('unsaved');
+            document.getElementById('save-status').textContent = 'All changes saved';
+            
+            // Send to Simple Git if connected
+            if (ws && ws.readyState === WebSocket.OPEN) {
+                ws.send(JSON.stringify({
+                    type: 'save',
+                    file: 'index.html',
+                    content: document.getElementById('code-editor').textContent
+                }));
+            }
+        }
+        
+        // Preview
+        function updatePreview() {
+            const code = document.getElementById('code-editor').textContent;
+            const preview = document.getElementById('preview-frame');
+            preview.srcdoc = code;
+        }
+        
+        function refreshPreview() {
+            updatePreview();
+        }
+        
+        function openInNewTab() {
+            const code = document.getElementById('code-editor').textContent;
+            const blob = new Blob([code], { type: 'text/html' });
+            const url = URL.createObjectURL(blob);
+            window.open(url, '_blank');
+        }
+        
+        // Drawing
+        function initDrawing() {
+            const canvas = document.getElementById('drawing-canvas');
+            const ctx = canvas.getContext('2d');
+            
+            canvas.addEventListener('mousedown', startDrawing);
+            canvas.addEventListener('mousemove', draw);
+            canvas.addEventListener('mouseup', stopDrawing);
+            canvas.addEventListener('mouseout', stopDrawing);
+            
+            // Clear canvas
+            ctx.fillStyle = '#2a2a2a';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+        }
+        
+        function startDrawing(e) {
+            isDrawing = true;
+            const canvas = document.getElementById('drawing-canvas');
+            const rect = canvas.getBoundingClientRect();
+            const ctx = canvas.getContext('2d');
+            
+            ctx.beginPath();
+            ctx.moveTo(e.clientX - rect.left, e.clientY - rect.top);
+        }
+        
+        function draw(e) {
+            if (!isDrawing) return;
+            
+            const canvas = document.getElementById('drawing-canvas');
+            const rect = canvas.getBoundingClientRect();
+            const ctx = canvas.getContext('2d');
+            
+            ctx.strokeStyle = currentColor;
+            ctx.lineWidth = currentTool === 'highlight' ? 20 : 2;
+            ctx.globalAlpha = currentTool === 'highlight' ? 0.3 : 1;
+            ctx.lineCap = 'round';
+            
+            ctx.lineTo(e.clientX - rect.left, e.clientY - rect.top);
+            ctx.stroke();
+        }
+        
+        function stopDrawing() {
+            isDrawing = false;
+        }
+        
+        function selectTool(tool) {
+            currentTool = tool;
+            document.querySelectorAll('.tool-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+        }
+        
+        function selectColor(color) {
+            currentColor = color;
+            document.querySelectorAll('.color-option').forEach(opt => opt.classList.remove('selected'));
+            event.target.classList.add('selected');
+        }
+        
+        function clearCanvas() {
+            const canvas = document.getElementById('drawing-canvas');
+            const ctx = canvas.getContext('2d');
+            ctx.fillStyle = '#2a2a2a';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+        }
+        
+        function sendDrawing() {
+            const canvas = document.getElementById('drawing-canvas');
+            const imageData = canvas.toDataURL('image/png');
+            
+            addMessage('[Sent drawing to AI]', 'user');
+            
+            // In real implementation, send to AI for analysis
+            setTimeout(() => {
+                addMessage('I see your drawing! Based on what you drew, I can help you implement that in code. What would you like me to create?', 'ai');
+            }, 1000);
+        }
+        
+        // AI Status
+        async function checkAIStatus() {
+            try {
+                const response = await fetch('/api/ai/status');
+                if (response.ok) {
+                    const data = await response.json();
+                    document.getElementById('ai-model').textContent = data.model || 'Connected';
+                    document.getElementById('ai-status').classList.remove('offline');
+                } else {
+                    document.getElementById('ai-model').textContent = 'Demo Mode';
+                }
+            } catch (error) {
+                document.getElementById('ai-model').textContent = 'Demo Mode';
+            }
+        }
+        
+        // Demo AI responses
+        function simulateAIResponse(message) {
+            const lower = message.toLowerCase();
+            let response = '';
+            let code = null;
+            
+            if (lower.includes('button') && lower.includes('red')) {
+                response = "I'll create a red button for you!";
+                code = `<!DOCTYPE html>
+<html>
+<head>
+    <title>Red Button Demo</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            height: 100vh; 
+            margin: 0;
+            background: #f0f0f0;
+        }
+        button {
+            background: #ff0000;
+            color: white;
+            border: none;
+            padding: 20px 40px;
+            font-size: 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        button:hover {
+            background: #cc0000;
+            transform: scale(1.05);
+        }
+    </style>
+</head>
+<body>
+    <button onclick="alert('Button clicked!')">Click Me!</button>
+</body>
+</html>`;
+            } else if (lower.includes('counter') || lower.includes('count')) {
+                response = "Adding a click counter to your button!";
+                code = `<!DOCTYPE html>
+<html>
+<head>
+    <title>Click Counter</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            display: flex; 
+            flex-direction: column;
+            justify-content: center; 
+            align-items: center; 
+            height: 100vh; 
+            margin: 0;
+            background: #f0f0f0;
+        }
+        button {
+            background: #ff0000;
+            color: white;
+            border: none;
+            padding: 20px 40px;
+            font-size: 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin: 10px;
+        }
+        button:hover {
+            background: #cc0000;
+            transform: scale(1.05);
+        }
+        #counter {
+            font-size: 24px;
+            margin: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div id="counter">Clicks: 0</div>
+    <button onclick="incrementCounter()">Click Me!</button>
+    
+    <script>
+        let count = 0;
+        function incrementCounter() {
+            count++;
+            document.getElementById('counter').textContent = 'Clicks: ' + count;
+        }
+    </script>
+</body>
+</html>`;
+            } else {
+                response = "I can help you build that! Try asking for specific UI elements like buttons, forms, or animations. You can also draw what you want and I'll help create it.";
+            }
+            
+            setTimeout(() => {
+                addMessage(response, 'ai');
+                if (code) {
+                    updateCode(code);
+                }
+            }, 1000);
+        }
+        
+        // Handle server messages
+        function handleServerMessage(data) {
+            switch (data.type) {
+                case 'code-update':
+                    updateCode(data.code);
+                    break;
+                case 'ai-response':
+                    addMessage(data.message, 'ai');
+                    break;
+                case 'save-complete':
+                    document.getElementById('save-status').textContent = 'Saved to Git';
+                    break;
+            }
+        }
+    </script>
+</body>
+</html>

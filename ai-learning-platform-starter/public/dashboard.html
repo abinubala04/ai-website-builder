@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - AI Learning Platform</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f5f5;
+            color: #333;
+        }
+        
+        .header {
+            background: #2563eb;
+            color: white;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .header h1 {
+            font-size: 24px;
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+        
+        .logout-btn {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: 1px solid rgba(255,255,255,0.3);
+            padding: 8px 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            text-decoration: none;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            gap: 20px;
+        }
+        
+        .sidebar {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            height: fit-content;
+        }
+        
+        .main-content {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .stat-box {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .stat-number {
+            font-size: 32px;
+            font-weight: bold;
+            color: #2563eb;
+        }
+        
+        .stat-label {
+            color: #666;
+            margin-top: 5px;
+        }
+        
+        .referral-section {
+            background: #e0f2fe;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        
+        .referral-link {
+            background: white;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+            word-break: break-all;
+            font-family: monospace;
+            font-size: 14px;
+        }
+        
+        .copy-btn {
+            background: #2563eb;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        
+        .post-form {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+        
+        input, textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+            font-family: inherit;
+        }
+        
+        textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+        
+        .submit-btn {
+            background: #10b981;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        
+        .submit-btn:hover {
+            background: #059669;
+        }
+        
+        .my-posts {
+            margin-top: 30px;
+        }
+        
+        .post {
+            border: 1px solid #eee;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        
+        .post-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+        
+        .post-content {
+            color: #666;
+            margin-bottom: 15px;
+        }
+        
+        .ai-response {
+            background: #e0f2fe;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #0284c7;
+        }
+        
+        .ai-response h4 {
+            color: #0284c7;
+            margin-bottom: 5px;
+        }
+        
+        .post-date {
+            font-size: 14px;
+            color: #999;
+        }
+        
+        .referral-list {
+            margin-top: 20px;
+        }
+        
+        .referral-item {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+        
+        .message {
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        
+        .message.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .guild-badge {
+            background: #fbbf24;
+            color: #78350f;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🧠 AI Learning Platform</h1>
+        <div class="user-info">
+            <span id="userEmail">Loading...</span>
+            <a href="#" class="logout-btn" onclick="logout()">Logout</a>
+        </div>
+    </div>
+    
+    <div class="container">
+        <div class="sidebar">
+            <div class="stat-box">
+                <div class="stat-number" id="creditCount">0</div>
+                <div class="stat-label">Credits Earned</div>
+            </div>
+            
+            <div class="referral-section">
+                <h3>🎯 Invite Friends</h3>
+                <p style="margin: 10px 0; font-size: 14px;">Earn 10 credits for each friend who joins!</p>
+                <div class="referral-link" id="referralLink">Loading...</div>
+                <button class="copy-btn" onclick="copyReferralLink()">Copy Link</button>
+            </div>
+            
+            <div class="referral-list">
+                <h3>👥 Your Guild</h3>
+                <div id="referralList">
+                    <p style="color: #666; font-size: 14px;">No referrals yet. Invite friends to build your guild!</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="main-content">
+            <h2>Share Your Learning Journey</h2>
+            
+            <div id="message" class="message" style="display: none;"></div>
+            
+            <div class="post-form">
+                <form id="postForm">
+                    <div class="form-group">
+                        <label for="title">What are you struggling with?</label>
+                        <input type="text" id="title" required placeholder="e.g., Can't get my loss below 0.5">
+                    </div>
+                    <div class="form-group">
+                        <label for="content">Describe the problem</label>
+                        <textarea id="content" required placeholder="I've been training my model for hours but the loss won't go down. I'm using Adam optimizer with learning rate 0.001..."></textarea>
+                    </div>
+                    <button type="submit" class="submit-btn">Post & Get AI Help →</button>
+                </form>
+            </div>
+            
+            <div class="my-posts">
+                <h3>Your Recent Posts</h3>
+                <div id="myPosts">
+                    <p style="color: #666;">No posts yet. Share your first learning challenge above!</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        let currentUser = null;
+        let token = null;
+        
+        // Get token from URL
+        const urlParams = new URLSearchParams(window.location.search);
+        token = urlParams.get('token');
+        
+        if (!token) {
+            window.location.href = '/';
+        }
+        
+        // Decode JWT to get user info (simple decode)
+        try {
+            const payload = JSON.parse(atob(token.split('.')[1]));
+            currentUser = payload;
+            document.getElementById('userEmail').textContent = currentUser.email;
+        } catch (error) {
+            console.error('Invalid token');
+            window.location.href = '/';
+        }
+        
+        // Load user data
+        async function loadUserData() {
+            try {
+                const response = await fetch(`/api/users/${currentUser.userId}/referrals`);
+                const data = await response.json();
+                
+                // Update credits
+                document.getElementById('creditCount').textContent = data.credits || 0;
+                
+                // Update referral link
+                document.getElementById('referralLink').textContent = data.referral_link;
+                
+                // Update referral list
+                if (data.referrals && data.referrals.length > 0) {
+                    document.getElementById('referralList').innerHTML = data.referrals.map(ref => `
+                        <div class="referral-item">
+                            <strong>${ref.username || ref.email.split('@')[0]}</strong>
+                            <span class="guild-badge">Guild Member</span>
+                            <br>
+                            <small>Joined ${new Date(ref.created_at).toLocaleDateString()}</small>
+                        </div>
+                    `).join('');
+                }
+            } catch (error) {
+                console.error('Error loading user data:', error);
+            }
+        }
+        
+        // Post form handler
+        document.getElementById('postForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const title = document.getElementById('title').value;
+            const content = document.getElementById('content').value;
+            
+            try {
+                const response = await fetch('/api/posts', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        title,
+                        content,
+                        userId: currentUser.userId
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showMessage('success', 'Posted successfully! AI has provided a response.');
+                    document.getElementById('postForm').reset();
+                    
+                    // Add new post to the top
+                    const newPost = `
+                        <div class="post">
+                            <h4 class="post-title">${escapeHtml(title)}</h4>
+                            <p class="post-content">${escapeHtml(content)}</p>
+                            <div class="ai-response">
+                                <h4>🤖 AI Helper:</h4>
+                                <p>${escapeHtml(data.ai_response)}</p>
+                            </div>
+                            <div class="post-date">Just now</div>
+                        </div>
+                    `;
+                    
+                    const postsContainer = document.getElementById('myPosts');
+                    if (postsContainer.innerHTML.includes('No posts yet')) {
+                        postsContainer.innerHTML = newPost;
+                    } else {
+                        postsContainer.innerHTML = newPost + postsContainer.innerHTML;
+                    }
+                } else {
+                    showMessage('error', data.error || 'Failed to create post');
+                }
+            } catch (error) {
+                showMessage('error', 'Error creating post');
+            }
+        });
+        
+        function copyReferralLink() {
+            const link = document.getElementById('referralLink').textContent;
+            navigator.clipboard.writeText(link).then(() => {
+                const btn = document.querySelector('.copy-btn');
+                const originalText = btn.textContent;
+                btn.textContent = 'Copied!';
+                setTimeout(() => {
+                    btn.textContent = originalText;
+                }, 2000);
+            });
+        }
+        
+        function showMessage(type, text) {
+            const message = document.getElementById('message');
+            message.className = `message ${type}`;
+            message.textContent = text;
+            message.style.display = 'block';
+            
+            setTimeout(() => {
+                message.style.display = 'none';
+            }, 5000);
+        }
+        
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+        
+        function logout() {
+            // Clear token and redirect
+            window.location.href = '/';
+        }
+        
+        // Load initial data
+        loadUserData();
+        
+        // Refresh data every 30 seconds
+        setInterval(loadUserData, 30000);
+    </script>
+</body>
+</html>

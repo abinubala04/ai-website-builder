@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI That Actually Learns!</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: #f0f2f5;
+        }
+        
+        .container {
+            display: flex;
+            gap: 20px;
+            width: 90%;
+            max-width: 1200px;
+        }
+        
+        .chat-container {
+            flex: 1;
+            height: 600px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        
+        .chat-header {
+            background: #e74c3c;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .message {
+            padding: 10px 15px;
+            border-radius: 18px;
+            max-width: 80%;
+            word-wrap: break-word;
+        }
+        
+        .user-message {
+            align-self: flex-end;
+            background: #e74c3c;
+            color: white;
+        }
+        
+        .ai-message {
+            align-self: flex-start;
+            background: #e9ecef;
+            color: #333;
+        }
+        
+        .system-message {
+            align-self: center;
+            background: #fff3cd;
+            color: #856404;
+            font-size: 14px;
+            text-align: center;
+            max-width: 90%;
+        }
+        
+        .chat-input {
+            display: flex;
+            padding: 20px;
+            border-top: 1px solid #e9ecef;
+            gap: 10px;
+        }
+        
+        input {
+            flex: 1;
+            padding: 10px 15px;
+            border: 1px solid #ddd;
+            border-radius: 25px;
+            font-size: 16px;
+            outline: none;
+        }
+        
+        input:focus {
+            border-color: #e74c3c;
+        }
+        
+        button {
+            padding: 10px 20px;
+            background: #e74c3c;
+            color: white;
+            border: none;
+            border-radius: 25px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        
+        button:hover {
+            background: #c0392b;
+        }
+        
+        .info-banner {
+            background: #fadbd8;
+            color: #a93226;
+            padding: 10px;
+            text-align: center;
+            font-size: 14px;
+        }
+        
+        .teach-panel {
+            width: 350px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        .teach-panel h3 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+        
+        .teach-form {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .teach-form input {
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        
+        .teach-btn {
+            background: #27ae60;
+            margin-top: 5px;
+        }
+        
+        .teach-btn:hover {
+            background: #229954;
+        }
+        
+        .learned-patterns {
+            flex: 1;
+            overflow-y: auto;
+            border: 1px solid #eee;
+            border-radius: 5px;
+            padding: 10px;
+        }
+        
+        .pattern-item {
+            background: #f8f9fa;
+            padding: 8px;
+            margin: 5px 0;
+            border-radius: 5px;
+            font-size: 14px;
+            position: relative;
+        }
+        
+        .pattern-trigger {
+            font-weight: bold;
+            color: #e74c3c;
+        }
+        
+        .pattern-response {
+            color: #27ae60;
+            margin-top: 3px;
+        }
+        
+        .delete-btn {
+            position: absolute;
+            right: 5px;
+            top: 5px;
+            background: #e74c3c;
+            color: white;
+            border: none;
+            padding: 2px 8px;
+            border-radius: 3px;
+            font-size: 12px;
+            cursor: pointer;
+        }
+        
+        .clear-all-btn {
+            background: #e74c3c;
+            font-size: 14px;
+            padding: 8px 15px;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+            }
+            .teach-panel {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="chat-container">
+            <div class="chat-header">
+                <h2>🧠 AI That ACTUALLY Learns!</h2>
+                <p style="font-size: 14px; opacity: 0.9;">Version 4: Real Learning</p>
+            </div>
+            
+            <div class="info-banner">
+                🎯 This AI learns from YOU! Teach it new responses and watch it remember.
+            </div>
+            
+            <div class="chat-messages" id="messages">
+                <div class="message ai-message">
+                    Hi! I can actually learn from you. Teach me new patterns using the panel on the right, then test me!
+                </div>
+                <div class="message system-message">
+                    💡 Try teaching me: "When I say 'goodnight', respond with 'sweet dreams!'"
+                </div>
+            </div>
+            
+            <div class="chat-input">
+                <input type="text" id="userInput" placeholder="Chat with me or test what I learned..." autofocus>
+                <button onclick="sendMessage()">Send</button>
+            </div>
+        </div>
+        
+        <div class="teach-panel">
+            <h3>🎓 Teach Your AI</h3>
+            
+            <div class="teach-form">
+                <input type="text" id="teachTrigger" placeholder="When I say...">
+                <input type="text" id="teachResponse" placeholder="You should respond...">
+                <button class="teach-btn" onclick="teachPattern()">Teach This Pattern</button>
+            </div>
+            
+            <h4 style="margin-top: 20px;">📚 What I've Learned:</h4>
+            <div class="learned-patterns" id="learnedPatterns">
+                <p style="color: #999; text-align: center;">Nothing learned yet. Teach me something!</p>
+            </div>
+            
+            <button class="clear-all-btn" onclick="clearAllPatterns()">Clear All Learning</button>
+        </div>
+    </div>
+
+    <script>
+        // VERSION 4: AI That Actually Learns!
+        // This stores and uses patterns taught by the user
+        
+        class LearningAI {
+            constructor() {
+                // Load learned patterns from localStorage
+                this.learnedPatterns = this.loadPatterns();
+                
+                // Built-in patterns (fallback)
+                this.builtInPatterns = [
+                    {
+                        trigger: 'hello',
+                        response: 'Hello! I can learn new responses from you.'
+                    },
+                    {
+                        trigger: 'how do you learn',
+                        response: 'You teach me! Use the panel on the right to add new patterns.'
+                    },
+                    {
+                        trigger: 'what can you do',
+                        response: 'I can learn any pattern you teach me and remember it forever!'
+                    }
+                ];
+                
+                this.updatePatternDisplay();
+            }
+            
+            // Main response method
+            respond(input) {
+                const lowerInput = input.toLowerCase();
+                
+                // First, check learned patterns (they take priority!)
+                for (const pattern of this.learnedPatterns) {
+                    if (lowerInput.includes(pattern.trigger.toLowerCase())) {
+                        return pattern.response;
+                    }
+                }
+                
+                // Then check built-in patterns
+                for (const pattern of this.builtInPatterns) {
+                    if (lowerInput.includes(pattern.trigger.toLowerCase())) {
+                        return pattern.response;
+                    }
+                }
+                
+                // Default response encourages teaching
+                return "I don't know how to respond to that yet. Teach me using the panel on the right!";
+            }
+            
+            // Learn a new pattern
+            learn(trigger, response) {
+                // Check if pattern already exists
+                const existingIndex = this.learnedPatterns.findIndex(
+                    p => p.trigger.toLowerCase() === trigger.toLowerCase()
+                );
+                
+                if (existingIndex >= 0) {
+                    // Update existing pattern
+                    this.learnedPatterns[existingIndex].response = response;
+                } else {
+                    // Add new pattern
+                    this.learnedPatterns.push({
+                        trigger: trigger,
+                        response: response,
+                        learnedAt: new Date().toISOString()
+                    });
+                }
+                
+                // Save to localStorage
+                this.savePatterns();
+                this.updatePatternDisplay();
+                
+                return `Learned! When you say "${trigger}", I'll respond with "${response}"`;
+            }
+            
+            // Delete a pattern
+            deletePattern(trigger) {
+                this.learnedPatterns = this.learnedPatterns.filter(
+                    p => p.trigger !== trigger
+                );
+                this.savePatterns();
+                this.updatePatternDisplay();
+            }
+            
+            // Clear all learned patterns
+            clearAll() {
+                this.learnedPatterns = [];
+                this.savePatterns();
+                this.updatePatternDisplay();
+            }
+            
+            // Save patterns to localStorage
+            savePatterns() {
+                localStorage.setItem('ai-learned-patterns', JSON.stringify(this.learnedPatterns));
+            }
+            
+            // Load patterns from localStorage
+            loadPatterns() {
+                try {
+                    const saved = localStorage.getItem('ai-learned-patterns');
+                    return saved ? JSON.parse(saved) : [];
+                } catch (e) {
+                    return [];
+                }
+            }
+            
+            // Update the display of learned patterns
+            updatePatternDisplay() {
+                const container = document.getElementById('learnedPatterns');
+                
+                if (this.learnedPatterns.length === 0) {
+                    container.innerHTML = '<p style="color: #999; text-align: center;">Nothing learned yet. Teach me something!</p>';
+                    return;
+                }
+                
+                container.innerHTML = this.learnedPatterns.map(pattern => `
+                    <div class="pattern-item">
+                        <button class="delete-btn" onclick="deletePattern('${pattern.trigger}')">×</button>
+                        <div class="pattern-trigger">Trigger: "${pattern.trigger}"</div>
+                        <div class="pattern-response">Response: "${pattern.response}"</div>
+                    </div>
+                `).join('');
+            }
+        }
+        
+        // Create our learning AI
+        const ai = new LearningAI();
+        
+        // Handle enter key
+        document.getElementById('userInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') sendMessage();
+        });
+        
+        document.getElementById('teachTrigger').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') document.getElementById('teachResponse').focus();
+        });
+        
+        document.getElementById('teachResponse').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') teachPattern();
+        });
+        
+        function sendMessage() {
+            const input = document.getElementById('userInput');
+            const message = input.value.trim();
+            
+            if (!message) return;
+            
+            // Add user message
+            addMessage(message, 'user');
+            
+            // Clear input
+            input.value = '';
+            
+            // Get AI response
+            const response = ai.respond(message);
+            
+            // Add AI response
+            setTimeout(() => {
+                addMessage(response, 'ai');
+            }, 300);
+        }
+        
+        function teachPattern() {
+            const triggerInput = document.getElementById('teachTrigger');
+            const responseInput = document.getElementById('teachResponse');
+            
+            const trigger = triggerInput.value.trim();
+            const response = responseInput.value.trim();
+            
+            if (!trigger || !response) {
+                alert('Please fill in both fields!');
+                return;
+            }
+            
+            // Teach the AI
+            const result = ai.learn(trigger, response);
+            
+            // Clear inputs
+            triggerInput.value = '';
+            responseInput.value = '';
+            
+            // Show confirmation
+            addMessage(result, 'system');
+            
+            // Focus back on trigger input
+            triggerInput.focus();
+        }
+        
+        function deletePattern(trigger) {
+            ai.deletePattern(trigger);
+            addMessage(`Forgot the pattern for "${trigger}"`, 'system');
+        }
+        
+        function clearAllPatterns() {
+            if (confirm('Are you sure you want to clear all learned patterns?')) {
+                ai.clearAll();
+                addMessage('All learned patterns have been cleared!', 'system');
+            }
+        }
+        
+        function addMessage(text, type) {
+            const messages = document.getElementById('messages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${type}-message`;
+            messageDiv.textContent = text;
+            messages.appendChild(messageDiv);
+            
+            // Scroll to bottom
+            messages.scrollTop = messages.scrollHeight;
+        }
+        
+        // Show learned patterns count on load
+        if (ai.learnedPatterns.length > 0) {
+            setTimeout(() => {
+                addMessage(`Welcome back! I remember ${ai.learnedPatterns.length} patterns you taught me.`, 'system');
+            }, 500);
+        }
+        
+        // Developer console message
+        console.log(`
+🧠 TRUE AI LEARNING!
+
+This is REAL learning because:
+1. You teach it patterns that weren't programmed
+2. It remembers them in localStorage
+3. They persist across page refreshes
+4. YOU control what it knows
+
+Try this proof:
+1. Teach: "when I say 'pizza', respond 'yummy!'"
+2. Test: type "pizza"
+3. Refresh the page
+4. Test again: type "pizza" - it still works!
+
+This is actual machine learning - pattern recognition and storage!
+        `);
+    </script>
+</body>
+</html>

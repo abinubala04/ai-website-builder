@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Learning Platform - Learn Together</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f5f5;
+            color: #333;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            background: #2563eb;
+            color: white;
+            padding: 30px 0;
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        
+        header h1 {
+            font-size: 36px;
+            margin-bottom: 10px;
+        }
+        
+        header p {
+            font-size: 18px;
+            opacity: 0.9;
+        }
+        
+        .auth-section {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            max-width: 400px;
+            margin: 0 auto 40px;
+        }
+        
+        .auth-section h2 {
+            margin-bottom: 20px;
+            color: #2563eb;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+        
+        input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        
+        button {
+            width: 100%;
+            padding: 12px;
+            background: #2563eb;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        
+        button:hover {
+            background: #1d4ed8;
+        }
+        
+        .posts-section {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .posts-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+        
+        .post {
+            border-bottom: 1px solid #eee;
+            padding: 20px 0;
+        }
+        
+        .post:last-child {
+            border-bottom: none;
+        }
+        
+        .post-title {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #1a1a1a;
+        }
+        
+        .post-content {
+            color: #666;
+            margin-bottom: 15px;
+        }
+        
+        .ai-response {
+            background: #e0f2fe;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            border-left: 4px solid #0284c7;
+        }
+        
+        .ai-response h4 {
+            color: #0284c7;
+            margin-bottom: 5px;
+        }
+        
+        .post-meta {
+            font-size: 14px;
+            color: #999;
+        }
+        
+        .message {
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            display: none;
+        }
+        
+        .message.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .message.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .referral-notice {
+            background: #fff3cd;
+            color: #856404;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+        
+        .how-it-works {
+            background: #f8f9fa;
+            padding: 40px;
+            border-radius: 10px;
+            margin: 40px 0;
+            text-align: center;
+        }
+        
+        .how-it-works h2 {
+            color: #2563eb;
+            margin-bottom: 30px;
+        }
+        
+        .steps {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 30px;
+            margin-top: 30px;
+        }
+        
+        .step {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        .step-number {
+            width: 40px;
+            height: 40px;
+            background: #2563eb;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 15px;
+            font-weight: bold;
+            font-size: 18px;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #666;
+        }
+        
+        .empty-state h3 {
+            margin-bottom: 10px;
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>🧠 AI Learning Platform</h1>
+        <p>Learn AI together. Ask questions. Get AI-powered help. Build your guild.</p>
+    </header>
+    
+    <div class="container">
+        <!-- Check if referred -->
+        <div id="referralNotice" class="referral-notice" style="display: none;">
+            You were invited! Sign up to join your friend's learning guild.
+        </div>
+        
+        <!-- Auth Section -->
+        <div class="auth-section" id="authSection">
+            <h2>Start Learning Today</h2>
+            <div id="message" class="message"></div>
+            
+            <form id="authForm">
+                <div class="form-group">
+                    <label for="email">Email Address</label>
+                    <input type="email" id="email" required placeholder="you@example.com">
+                </div>
+                <input type="hidden" id="referralCode">
+                <button type="submit">Get Magic Link →</button>
+            </form>
+            
+            <p style="margin-top: 20px; text-align: center; color: #666; font-size: 14px;">
+                No password needed! We'll email you a secure login link.
+            </p>
+        </div>
+        
+        <!-- How It Works -->
+        <div class="how-it-works">
+            <h2>How It Works</h2>
+            <div class="steps">
+                <div class="step">
+                    <div class="step-number">1</div>
+                    <h3>Post Your Problem</h3>
+                    <p>Share what you're stuck on while learning AI</p>
+                </div>
+                <div class="step">
+                    <div class="step-number">2</div>
+                    <h3>AI Helps You</h3>
+                    <p>Get instant suggestions and solutions from AI</p>
+                </div>
+                <div class="step">
+                    <div class="step-number">3</div>
+                    <h3>Community Learns</h3>
+                    <p>Others benefit from your questions and solutions</p>
+                </div>
+                <div class="step">
+                    <div class="step-number">4</div>
+                    <h3>Build Your Guild</h3>
+                    <p>Invite friends and grow your learning network</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Recent Posts -->
+        <div class="posts-section">
+            <div class="posts-header">
+                <h2>Recent Learning Discussions</h2>
+            </div>
+            
+            <div id="posts">
+                <div class="empty-state">
+                    <h3>Be the first to post!</h3>
+                    <p>Sign up and share what you're learning or struggling with.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Check for referral code
+        const urlParams = new URLSearchParams(window.location.search);
+        const ref = urlParams.get('ref');
+        if (ref) {
+            document.getElementById('referralNotice').style.display = 'block';
+            document.getElementById('referralCode').value = ref;
+        }
+        
+        // Load recent posts
+        async function loadPosts() {
+            try {
+                const response = await fetch('/api/posts');
+                const posts = await response.json();
+                
+                const postsContainer = document.getElementById('posts');
+                
+                if (posts.length === 0) {
+                    return;
+                }
+                
+                postsContainer.innerHTML = posts.map(post => `
+                    <div class="post">
+                        <h3 class="post-title">${escapeHtml(post.title)}</h3>
+                        <p class="post-content">${escapeHtml(post.content)}</p>
+                        
+                        ${post.ai_response ? `
+                            <div class="ai-response">
+                                <h4>🤖 AI Helper:</h4>
+                                <p>${escapeHtml(post.ai_response)}</p>
+                            </div>
+                        ` : ''}
+                        
+                        <div class="post-meta">
+                            Posted by ${escapeHtml(post.username || post.email.split('@')[0])} • 
+                            ${new Date(post.created_at).toLocaleDateString()} • 
+                            ${post.comment_count || 0} comments
+                        </div>
+                    </div>
+                `).join('');
+            } catch (error) {
+                console.error('Error loading posts:', error);
+            }
+        }
+        
+        // Auth form handler
+        document.getElementById('authForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const email = document.getElementById('email').value;
+            const referralCode = document.getElementById('referralCode').value;
+            
+            try {
+                const response = await fetch('/api/auth/magic-link', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, referralCode })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    if (data.debug) {
+                        // Email not configured - using console
+                        showMessage('success', '📧 ' + data.message + '\n\nLook for the link in your terminal/console where the server is running!');
+                    } else {
+                        showMessage('success', 'Check your email! We sent you a magic login link.');
+                    }
+                    document.getElementById('authForm').reset();
+                } else {
+                    showMessage('error', data.error || 'Something went wrong');
+                }
+            } catch (error) {
+                showMessage('error', 'Failed to send magic link');
+            }
+        });
+        
+        function showMessage(type, text) {
+            const message = document.getElementById('message');
+            message.className = `message ${type}`;
+            message.textContent = text;
+            message.style.display = 'block';
+            
+            setTimeout(() => {
+                message.style.display = 'none';
+            }, 5000);
+        }
+        
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+        
+        // Load posts on page load
+        loadPosts();
+        
+        // Refresh posts every 30 seconds
+        setInterval(loadPosts, 30000);
+    </script>
+</body>
+</html>

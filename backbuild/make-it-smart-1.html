@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My AI Chat - Smarter</title>
+    <style>
+        /* Same styles as before */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: #f0f2f5;
+        }
+        
+        .chat-container {
+            width: 90%;
+            max-width: 500px;
+            height: 600px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        
+        .chat-header {
+            background: #5cb85c;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .message {
+            padding: 10px 15px;
+            border-radius: 18px;
+            max-width: 80%;
+            word-wrap: break-word;
+        }
+        
+        .user-message {
+            align-self: flex-end;
+            background: #5cb85c;
+            color: white;
+        }
+        
+        .ai-message {
+            align-self: flex-start;
+            background: #e9ecef;
+            color: #333;
+        }
+        
+        .chat-input {
+            display: flex;
+            padding: 20px;
+            border-top: 1px solid #e9ecef;
+            gap: 10px;
+        }
+        
+        input {
+            flex: 1;
+            padding: 10px 15px;
+            border: 1px solid #ddd;
+            border-radius: 25px;
+            font-size: 16px;
+            outline: none;
+        }
+        
+        input:focus {
+            border-color: #5cb85c;
+        }
+        
+        button {
+            padding: 10px 20px;
+            background: #5cb85c;
+            color: white;
+            border: none;
+            border-radius: 25px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        
+        button:hover {
+            background: #4cae4c;
+        }
+        
+        .typing {
+            display: none;
+            align-self: flex-start;
+            padding: 10px 15px;
+            background: #e9ecef;
+            border-radius: 18px;
+            margin: 10px 0;
+        }
+        
+        .typing span {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #999;
+            margin: 0 2px;
+            animation: typing 1.4s infinite;
+        }
+        
+        .typing span:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+        
+        .typing span:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+        
+        @keyframes typing {
+            0%, 60%, 100% {
+                transform: translateY(0);
+            }
+            30% {
+                transform: translateY(-10px);
+            }
+        }
+        
+        .info-banner {
+            background: #d4edda;
+            color: #155724;
+            padding: 10px;
+            text-align: center;
+            font-size: 14px;
+        }
+        
+        .code-hint {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #333;
+            color: #0f0;
+            padding: 10px;
+            border-radius: 5px;
+            font-family: monospace;
+            font-size: 12px;
+            opacity: 0.8;
+        }
+    </style>
+</head>
+<body>
+    <div class="chat-container">
+        <div class="chat-header">
+            <h2>🧠 My AI Assistant</h2>
+            <p style="font-size: 14px; opacity: 0.9;">Version 2: Pattern Matching!</p>
+        </div>
+        
+        <div class="info-banner">
+            🎯 Now it recognizes keywords and responds accordingly! Try asking about coding, weather, or saying hello.
+        </div>
+        
+        <div class="chat-messages" id="messages">
+            <div class="message ai-message">
+                Hi! I'm smarter now - I can recognize what you're talking about and respond appropriately!
+            </div>
+        </div>
+        
+        <div class="typing" id="typing">
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+        
+        <div class="chat-input">
+            <input type="text" id="userInput" placeholder="Try asking about coding, weather, or just say hi!" autofocus>
+            <button onclick="sendMessage()">Send</button>
+        </div>
+    </div>
+    
+    <div class="code-hint">
+        Hint: View source to see<br>
+        how pattern matching works!
+    </div>
+
+    <script>
+        // VERSION 2: Pattern Matching AI
+        // Now we check what the user is talking about!
+        
+        class SimpleAI {
+            constructor() {
+                // Define patterns and their responses
+                this.patterns = [
+                    {
+                        keywords: ['hello', 'hi', 'hey', 'greetings'],
+                        responses: [
+                            "Hello! How are you doing today?",
+                            "Hi there! Nice to meet you!",
+                            "Hey! What's on your mind?",
+                            "Greetings! How can I help you today?"
+                        ]
+                    },
+                    {
+                        keywords: ['how are you', 'how do you feel', 'are you okay'],
+                        responses: [
+                            "I'm doing great, thanks for asking! How about you?",
+                            "I'm wonderful! Ready to chat and help.",
+                            "Feeling fantastic and ready to assist!"
+                        ]
+                    },
+                    {
+                        keywords: ['code', 'programming', 'javascript', 'python', 'html', 'css'],
+                        responses: [
+                            "I love talking about coding! What language are you interested in?",
+                            "Programming is awesome! Are you working on a project?",
+                            "Code is poetry! What are you building?",
+                            "I can help with coding questions! What do you need?"
+                        ]
+                    },
+                    {
+                        keywords: ['weather', 'temperature', 'rain', 'sunny', 'cold', 'hot'],
+                        responses: [
+                            "I can't check real weather, but I hope it's nice where you are!",
+                            "Weather talk! Is it nice outside?",
+                            "I wish I could look out a window! How's the weather there?"
+                        ]
+                    },
+                    {
+                        keywords: ['help', 'assist', 'support', 'problem'],
+                        responses: [
+                            "I'm here to help! What do you need assistance with?",
+                            "Happy to help! Tell me more about what you need.",
+                            "Let me assist you. What's the challenge?"
+                        ]
+                    },
+                    {
+                        keywords: ['joke', 'funny', 'laugh'],
+                        responses: [
+                            "Why do programmers prefer dark mode? Because light attracts bugs! 😄",
+                            "How do you comfort a JavaScript bug? You console it! 😂",
+                            "Why was the computer cold? It left its Windows open! 🪟"
+                        ]
+                    },
+                    {
+                        keywords: ['bye', 'goodbye', 'see you', 'later'],
+                        responses: [
+                            "Goodbye! It was great chatting with you!",
+                            "See you later! Have a wonderful day!",
+                            "Bye! Come back anytime you want to chat!"
+                        ]
+                    }
+                ];
+                
+                // Default responses when no pattern matches
+                this.defaultResponses = [
+                    "That's interesting! Can you tell me more?",
+                    "I see. What else would you like to discuss?",
+                    "Fascinating! I'd love to hear more about that.",
+                    "Hmm, let me think about that. What's your perspective?",
+                    "Interesting point! What made you think of that?"
+                ];
+            }
+            
+            // Main response method
+            respond(input) {
+                const lowerInput = input.toLowerCase();
+                
+                // Check each pattern
+                for (const pattern of this.patterns) {
+                    // If any keyword matches
+                    if (pattern.keywords.some(keyword => lowerInput.includes(keyword))) {
+                        // Return a random response from that pattern
+                        return this.getRandomResponse(pattern.responses);
+                    }
+                }
+                
+                // No pattern matched - use default
+                return this.getRandomResponse(this.defaultResponses);
+            }
+            
+            getRandomResponse(responses) {
+                return responses[Math.floor(Math.random() * responses.length)];
+            }
+        }
+        
+        // Create our AI
+        const ai = new SimpleAI();
+        
+        // Handle enter key
+        document.getElementById('userInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+        
+        function sendMessage() {
+            const input = document.getElementById('userInput');
+            const message = input.value.trim();
+            
+            if (!message) return;
+            
+            // Add user message
+            addMessage(message, 'user');
+            
+            // Clear input
+            input.value = '';
+            
+            // Show typing indicator
+            const typing = document.getElementById('typing');
+            typing.style.display = 'block';
+            
+            // Simulate thinking time (shorter now - we're smarter!)
+            setTimeout(() => {
+                typing.style.display = 'none';
+                
+                // Get AI response based on pattern matching
+                const response = ai.respond(message);
+                
+                // Add AI response
+                addMessage(response, 'ai');
+            }, 500 + Math.random() * 500); // 0.5-1 seconds
+        }
+        
+        function addMessage(text, sender) {
+            const messages = document.getElementById('messages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${sender}-message`;
+            messageDiv.textContent = text;
+            messages.appendChild(messageDiv);
+            
+            // Scroll to bottom
+            messages.scrollTop = messages.scrollHeight;
+        }
+        
+        // Developer console message
+        console.log(`
+🎉 Level Up! Your AI now has pattern matching!
+
+Version 2 Features:
+- Recognizes keywords in messages
+- Responds based on topic
+- Multiple responses per pattern
+- Fallback for unknown topics
+
+Try these:
+- "Hello!" (greeting)
+- "Can you help with JavaScript?" (coding)
+- "Tell me a joke" (humor)
+- "How's the weather?" (weather)
+
+Next: We'll add memory so it remembers your conversation!
+        `);
+    </script>
+</body>
+</html>

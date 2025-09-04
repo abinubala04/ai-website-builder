@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your AI Workspace</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f5f5;
+            height: 100vh;
+            display: flex;
+            overflow: hidden;
+        }
+        
+        /* Sidebar */
+        .sidebar {
+            width: 280px;
+            background: #1a1a1a;
+            color: white;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .workspace-info {
+            margin-bottom: 30px;
+        }
+        
+        .workspace-info h2 {
+            font-size: 20px;
+            margin-bottom: 10px;
+        }
+        
+        .agent-status {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            background: #4ade80;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+        
+        .menu-item {
+            padding: 12px 16px;
+            margin: 4px 0;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .menu-item:hover {
+            background: rgba(255,255,255,0.1);
+        }
+        
+        .menu-item.active {
+            background: #667eea;
+        }
+        
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        /* Preview Area */
+        .preview-area {
+            flex: 1;
+            background: white;
+            border-bottom: 1px solid #e0e0e0;
+            position: relative;
+        }
+        
+        .preview-frame {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+        
+        .preview-placeholder {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: #666;
+            text-align: center;
+            padding: 40px;
+        }
+        
+        .preview-placeholder h3 {
+            margin-bottom: 10px;
+            color: #333;
+        }
+        
+        /* Chat Area */
+        .chat-area {
+            height: 350px;
+            background: white;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .chat-header {
+            padding: 16px 20px;
+            background: #f8f9fa;
+            border-bottom: 1px solid #e0e0e0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .chat-messages {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+        
+        .message {
+            max-width: 70%;
+            word-wrap: break-word;
+        }
+        
+        .message.user {
+            align-self: flex-end;
+        }
+        
+        .message.assistant {
+            align-self: flex-start;
+        }
+        
+        .message-bubble {
+            padding: 12px 16px;
+            border-radius: 16px;
+            position: relative;
+        }
+        
+        .message.user .message-bubble {
+            background: #667eea;
+            color: white;
+        }
+        
+        .message.assistant .message-bubble {
+            background: #f1f3f5;
+            color: #333;
+        }
+        
+        .message-time {
+            font-size: 12px;
+            opacity: 0.7;
+            margin-top: 4px;
+        }
+        
+        .chat-input-area {
+            padding: 16px;
+            background: #f8f9fa;
+            border-top: 1px solid #e0e0e0;
+        }
+        
+        .chat-input-wrapper {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .chat-input {
+            flex: 1;
+            padding: 12px 16px;
+            border: 1px solid #e0e0e0;
+            border-radius: 24px;
+            font-size: 16px;
+            resize: none;
+            font-family: inherit;
+        }
+        
+        .chat-input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .send-button {
+            padding: 12px 24px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 24px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .send-button:hover {
+            background: #5a67d8;
+        }
+        
+        .send-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        /* Action Buttons */
+        .action-bar {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            gap: 10px;
+        }
+        
+        .action-button {
+            padding: 8px 16px;
+            background: white;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 14px;
+        }
+        
+        .action-button:hover {
+            border-color: #667eea;
+            color: #667eea;
+        }
+        
+        .action-button.primary {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+        
+        .action-button.primary:hover {
+            background: #5a67d8;
+        }
+        
+        /* Loading State */
+        .typing-indicator {
+            display: none;
+            align-items: center;
+            gap: 4px;
+            padding: 8px 16px;
+        }
+        
+        .typing-indicator.active {
+            display: flex;
+        }
+        
+        .typing-dot {
+            width: 8px;
+            height: 8px;
+            background: #666;
+            border-radius: 50%;
+            animation: typing 1.4s infinite;
+        }
+        
+        .typing-dot:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+        
+        .typing-dot:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+        
+        @keyframes typing {
+            0%, 60%, 100% {
+                opacity: 0.3;
+                transform: translateY(0);
+            }
+            30% {
+                opacity: 1;
+                transform: translateY(-10px);
+            }
+        }
+        
+        /* Notifications */
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 16px 20px;
+            background: #4ade80;
+            color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            transform: translateX(400px);
+            transition: transform 0.3s;
+        }
+        
+        .notification.show {
+            transform: translateX(0);
+        }
+    </style>
+</head>
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="workspace-info">
+            <h2>Your Workspace</h2>
+            <div class="agent-status">
+                <div class="status-dot"></div>
+                <span id="agentName">Loading...</span>
+            </div>
+        </div>
+        
+        <div class="menu">
+            <div class="menu-item active" data-view="chat">
+                <span>💬</span> Chat with Agent
+            </div>
+            <div class="menu-item" data-view="preview">
+                <span>👁️</span> Preview App
+            </div>
+            <div class="menu-item" data-view="files" onclick="showFileBrowser()">
+                <span>📁</span> View Files
+            </div>
+            <div class="menu-item" data-view="deploy">
+                <span>🚀</span> Deploy
+            </div>
+        </div>
+    </div>
+    
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Preview Area -->
+        <div class="preview-area">
+            <div class="preview-placeholder">
+                <div>
+                    <h3>🏗️ Your app is being built</h3>
+                    <p>Chat with your AI agent below to describe what you want!</p>
+                </div>
+            </div>
+            <iframe class="preview-frame" style="display: none;" id="previewFrame"></iframe>
+            
+            <div class="action-bar">
+                <button class="action-button" onclick="refreshPreview()">🔄 Refresh</button>
+                <button class="action-button primary" onclick="deployApp()">🚀 Deploy to Production</button>
+            </div>
+        </div>
+        
+        <!-- Chat Area -->
+        <div class="chat-area">
+            <div class="chat-header">
+                <span>💬</span>
+                <strong>Chat with <span id="agentNameHeader">your AI agent</span></strong>
+            </div>
+            
+            <div class="chat-messages" id="chatMessages">
+                <!-- Messages will appear here -->
+            </div>
+            
+            <div class="typing-indicator" id="typingIndicator">
+                <div class="typing-dot"></div>
+                <div class="typing-dot"></div>
+                <div class="typing-dot"></div>
+            </div>
+            
+            <div class="chat-input-area">
+                <form class="chat-input-wrapper" onsubmit="sendMessage(event)">
+                    <input 
+                        type="text" 
+                        class="chat-input" 
+                        id="chatInput" 
+                        placeholder="Describe what you want to build..."
+                        autocomplete="off"
+                    >
+                    <button type="submit" class="send-button" id="sendButton">Send</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Notification -->
+    <div class="notification" id="notification"></div>
+    
+    <script>
+        // Get workspace ID from URL
+        const workspaceId = window.location.pathname.split('/').pop();
+        let agentId = null;
+        let conversationHistory = [];
+        
+        // Load workspace info
+        async function loadWorkspace() {
+            try {
+                const response = await fetch(`/api/workspace/${workspaceId}`);
+                const data = await response.json();
+                
+                agentId = data.agent.id;
+                document.getElementById('agentName').textContent = data.agent.name + ' (Active)';
+                document.getElementById('agentNameHeader').textContent = data.agent.name;
+                
+                // Load initial greeting
+                addMessage('assistant', `Hello! I'm ${data.agent.name}, your personal AI builder. Tell me more about what you'd like me to create for you!`);
+                
+                // Set preview URL
+                document.getElementById('previewFrame').src = `http://localhost:3000`; // Would be dynamic
+                
+            } catch (error) {
+                console.error('Failed to load workspace:', error);
+                showNotification('Failed to load workspace', 'error');
+            }
+        }
+        
+        // Send message to agent
+        async function sendMessage(event) {
+            event.preventDefault();
+            
+            const input = document.getElementById('chatInput');
+            const message = input.value.trim();
+            
+            if (!message || !agentId) return;
+            
+            // Add user message
+            addMessage('user', message);
+            
+            // Clear input and disable
+            input.value = '';
+            input.disabled = true;
+            document.getElementById('sendButton').disabled = true;
+            
+            // Show typing indicator
+            document.getElementById('typingIndicator').classList.add('active');
+            
+            try {
+                const response = await fetch(`/api/agent/${agentId}/chat`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message })
+                });
+                
+                const data = await response.json();
+                
+                // Add agent response
+                addMessage('assistant', data.response);
+                
+                // Handle any actions
+                if (data.action) {
+                    handleAction(data.action);
+                }
+                
+            } catch (error) {
+                console.error('Chat error:', error);
+                addMessage('assistant', 'Sorry, I encountered an error. Please try again.');
+            } finally {
+                // Hide typing and re-enable input
+                document.getElementById('typingIndicator').classList.remove('active');
+                input.disabled = false;
+                document.getElementById('sendButton').disabled = false;
+                input.focus();
+            }
+        }
+        
+        // Add message to chat
+        function addMessage(role, content) {
+            const messagesDiv = document.getElementById('chatMessages');
+            
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${role}`;
+            
+            const bubble = document.createElement('div');
+            bubble.className = 'message-bubble';
+            bubble.textContent = content;
+            
+            const time = document.createElement('div');
+            time.className = 'message-time';
+            time.textContent = new Date().toLocaleTimeString();
+            
+            messageDiv.appendChild(bubble);
+            messageDiv.appendChild(time);
+            
+            messagesDiv.appendChild(messageDiv);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+            
+            // Store in history
+            conversationHistory.push({ role, content, timestamp: new Date() });
+        }
+        
+        // Handle agent actions
+        function handleAction(action) {
+            switch (action.type) {
+                case 'preview':
+                    showPreview();
+                    checkApplicationStatus();
+                    break;
+                case 'deploy':
+                    deployApp();
+                    break;
+                case 'show-code':
+                    showFileBrowser();
+                    break;
+            }
+        }
+        
+        // Check application status
+        async function checkApplicationStatus() {
+            try {
+                const response = await fetch(`/api/workspace/${workspaceId}/status`);
+                const status = await response.json();
+                
+                if (status.hasCode) {
+                    // Show "View Files" notification
+                    showNotification('✅ Code generated! Click "View Files" to see what was built.');
+                }
+            } catch (error) {
+                console.error('Status check failed:', error);
+            }
+        }
+        
+        // Show preview
+        function showPreview() {
+            document.querySelector('.preview-placeholder').style.display = 'none';
+            document.getElementById('previewFrame').style.display = 'block';
+            showNotification('Preview updated!');
+        }
+        
+        // Refresh preview
+        function refreshPreview() {
+            const frame = document.getElementById('previewFrame');
+            frame.src = frame.src;
+            showNotification('Preview refreshed!');
+        }
+        
+        // Deploy app
+        async function deployApp() {
+            if (!confirm('Deploy your app to production?')) return;
+            
+            showNotification('Deploying your app...');
+            
+            try {
+                const response = await fetch(`/api/workspace/${workspaceId}/deploy`, {
+                    method: 'POST'
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showNotification(`🎉 Deployed! Your app is live at: ${data.url}`, 'success');
+                    addMessage('assistant', `Great news! Your app is now live at: ${data.url}`);
+                }
+            } catch (error) {
+                showNotification('Deployment failed', 'error');
+            }
+        }
+        
+        // Show notification
+        function showNotification(message, type = 'info') {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.className = `notification ${type} show`;
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+        
+        // Show file browser
+        function showFileBrowser() {
+            const frame = document.getElementById('previewFrame');
+            frame.src = `/file-browser.html?workspace=${workspaceId}`;
+            frame.style.display = 'block';
+            document.querySelector('.preview-placeholder').style.display = 'none';
+            
+            // Set global for iframe
+            window.workspaceId = workspaceId;
+        }
+        
+        // Menu navigation
+        document.querySelectorAll('.menu-item').forEach(item => {
+            item.addEventListener('click', function() {
+                document.querySelectorAll('.menu-item').forEach(i => i.classList.remove('active'));
+                this.classList.add('active');
+                
+                const view = this.dataset.view;
+                // Handle view switching
+                switch (view) {
+                    case 'chat':
+                        // Already showing
+                        break;
+                    case 'preview':
+                        showPreview();
+                        break;
+                    case 'files':
+                        showFileBrowser();
+                        break;
+                    case 'deploy':
+                        deployApp();
+                        break;
+                }
+            });
+        });
+        
+        // Initialize
+        loadWorkspace();
+        
+        // Focus chat input
+        document.getElementById('chatInput').focus();
+    </script>
+</body>
+</html>

@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Dashboard - AI Builder</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+            background: #f5f5f5;
+            min-height: 100vh;
+        }
+        
+        /* Header */
+        .header {
+            background: white;
+            border-bottom: 1px solid #e0e0e0;
+            padding: 15px 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .logo {
+            font-size: 20px;
+            font-weight: 600;
+            color: #333;
+            text-decoration: none;
+        }
+        .user-menu {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+        .credits {
+            background: #f0f0f0;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 14px;
+            color: #666;
+        }
+        .credits span {
+            font-weight: 600;
+            color: #333;
+        }
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: #667eea;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+        }
+        .logout-btn {
+            color: #666;
+            text-decoration: none;
+            font-size: 14px;
+        }
+        .logout-btn:hover {
+            color: #333;
+        }
+        
+        /* Dashboard */
+        .dashboard {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+        .dashboard-header {
+            margin-bottom: 40px;
+        }
+        .dashboard-header h1 {
+            font-size: 32px;
+            margin-bottom: 10px;
+            color: #333;
+        }
+        .dashboard-header p {
+            color: #666;
+            font-size: 18px;
+        }
+        
+        /* New Project */
+        .new-project-card {
+            background: white;
+            border-radius: 12px;
+            padding: 40px;
+            text-align: center;
+            margin-bottom: 40px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        .new-project-card h2 {
+            margin-bottom: 20px;
+            color: #333;
+        }
+        .create-btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .create-btn:hover {
+            background: #5a5ed8;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+        
+        /* Projects Grid */
+        .projects-section h2 {
+            margin-bottom: 20px;
+            color: #333;
+        }
+        .projects-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+        .project-card {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+        }
+        .project-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+        }
+        .project-icon {
+            width: 48px;
+            height: 48px;
+            background: #f0f0f0;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            margin-bottom: 16px;
+        }
+        .project-name {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #333;
+        }
+        .project-meta {
+            font-size: 14px;
+            color: #666;
+        }
+        .project-type {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: #e3f2fd;
+            color: #1976d2;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 80px 20px;
+            color: #666;
+        }
+        .empty-state-icon {
+            font-size: 64px;
+            margin-bottom: 20px;
+            opacity: 0.3;
+        }
+        .empty-state h3 {
+            font-size: 24px;
+            margin-bottom: 10px;
+            color: #333;
+        }
+        
+        /* Loading */
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+        .spinner {
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            border: 3px solid #f0f0f0;
+            border-top-color: #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+        .modal.show {
+            display: flex;
+        }
+        .modal-content {
+            background: white;
+            padding: 40px;
+            border-radius: 12px;
+            max-width: 500px;
+            width: 90%;
+        }
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .modal-close {
+            font-size: 24px;
+            color: #999;
+            cursor: pointer;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 500;
+        }
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 16px;
+        }
+        .project-types {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .type-option {
+            padding: 20px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .type-option:hover {
+            border-color: #667eea;
+        }
+        .type-option.selected {
+            border-color: #667eea;
+            background: #f5f7ff;
+        }
+        .type-icon {
+            font-size: 32px;
+            margin-bottom: 8px;
+        }
+        .modal-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+        .btn {
+            padding: 10px 20px;
+            border-radius: 6px;
+            border: none;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .btn-secondary {
+            background: #f0f0f0;
+            color: #666;
+        }
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+        .btn:hover {
+            transform: translateY(-1px);
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-content">
+            <a href="/" class="logo">🚀 AI Builder</a>
+            <div class="user-menu">
+                <div class="credits">
+                    AI Credits: <span id="aiCredits">Loading...</span>
+                </div>
+                <div class="user-info">
+                    <div class="avatar" id="userAvatar">?</div>
+                    <span id="userEmail">Loading...</span>
+                    <a href="#" onclick="logout()" class="logout-btn">Logout</a>
+                </div>
+            </div>
+        </div>
+    </header>
+    
+    <!-- Dashboard -->
+    <div class="dashboard">
+        <div class="dashboard-header">
+            <h1>Your Projects</h1>
+            <p>Build apps by describing what you want. No coding required.</p>
+        </div>
+        
+        <!-- New Project -->
+        <div class="new-project-card">
+            <h2>🎨 Start Something New</h2>
+            <p style="margin-bottom: 20px; color: #666;">Create a web app, game, tool, or anything you can imagine</p>
+            <button class="create-btn" onclick="showNewProjectModal()">Create New Project</button>
+        </div>
+        
+        <!-- Projects -->
+        <div class="projects-section">
+            <h2>Recent Projects</h2>
+            <div id="projectsContainer">
+                <div class="loading">
+                    <div class="spinner"></div>
+                    <p>Loading your projects...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- New Project Modal -->
+    <div id="newProjectModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Create New Project</h2>
+                <span class="modal-close" onclick="closeModal()">&times;</span>
+            </div>
+            
+            <form id="newProjectForm" onsubmit="createProject(event)">
+                <div class="form-group">
+                    <label>Project Name</label>
+                    <input type="text" name="name" placeholder="My Awesome App" required>
+                </div>
+                
+                <div class="form-group">
+                    <label>What type of project?</label>
+                    <div class="project-types">
+                        <div class="type-option selected" data-type="web" onclick="selectType('web')">
+                            <div class="type-icon">🌐</div>
+                            <div>Web App</div>
+                        </div>
+                        <div class="type-option" data-type="game" onclick="selectType('game')">
+                            <div class="type-icon">🎮</div>
+                            <div>Game</div>
+                        </div>
+                        <div class="type-option" data-type="tool" onclick="selectType('tool')">
+                            <div class="type-icon">🔧</div>
+                            <div>Tool</div>
+                        </div>
+                        <div class="type-option" data-type="other" onclick="selectType('other')">
+                            <div class="type-icon">✨</div>
+                            <div>Other</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Create Project</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <script>
+        let currentUser = null;
+        let selectedProjectType = 'web';
+        
+        // Load user data
+        async function loadUserData() {
+            try {
+                const response = await fetch('/api/user');
+                if (!response.ok) {
+                    window.location.href = '/';
+                    return;
+                }
+                
+                currentUser = await response.json();
+                
+                // Update UI
+                document.getElementById('userEmail').textContent = currentUser.email;
+                document.getElementById('userAvatar').textContent = currentUser.name ? currentUser.name[0].toUpperCase() : currentUser.email[0].toUpperCase();
+                document.getElementById('aiCredits').textContent = currentUser.ai_credits;
+                
+                // Load projects
+                loadProjects();
+            } catch (error) {
+                console.error('Failed to load user data:', error);
+                window.location.href = '/';
+            }
+        }
+        
+        // Load projects
+        async function loadProjects() {
+            try {
+                const response = await fetch('/api/projects');
+                const projects = await response.json();
+                
+                const container = document.getElementById('projectsContainer');
+                
+                if (projects.length === 0) {
+                    container.innerHTML = `
+                        <div class="empty-state">
+                            <div class="empty-state-icon">📁</div>
+                            <h3>No projects yet</h3>
+                            <p>Create your first project to get started!</p>
+                        </div>
+                    `;
+                } else {
+                    container.innerHTML = `
+                        <div class="projects-grid">
+                            ${projects.map(project => `
+                                <div class="project-card" onclick="openProject(${project.id})">
+                                    <div class="project-type">${project.type}</div>
+                                    <div class="project-icon">${getProjectIcon(project.type)}</div>
+                                    <div class="project-name">${project.name}</div>
+                                    <div class="project-meta">
+                                        Updated ${formatDate(project.updated_at)}
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                console.error('Failed to load projects:', error);
+            }
+        }
+        
+        // Project type selection
+        function selectType(type) {
+            selectedProjectType = type;
+            document.querySelectorAll('.type-option').forEach(opt => {
+                opt.classList.toggle('selected', opt.dataset.type === type);
+            });
+        }
+        
+        // Create project
+        async function createProject(e) {
+            e.preventDefault();
+            const form = e.target;
+            
+            try {
+                const response = await fetch('/api/projects', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        name: form.name.value,
+                        type: selectedProjectType
+                    })
+                });
+                
+                if (response.ok) {
+                    const project = await response.json();
+                    window.location.href = `/workspace?project=${project.id}`;
+                } else {
+                    alert('Failed to create project');
+                }
+            } catch (error) {
+                alert('Error creating project');
+            }
+        }
+        
+        // Open project
+        function openProject(projectId) {
+            window.location.href = `/workspace?project=${projectId}`;
+        }
+        
+        // Modal functions
+        function showNewProjectModal() {
+            document.getElementById('newProjectModal').classList.add('show');
+        }
+        
+        function closeModal() {
+            document.getElementById('newProjectModal').classList.remove('show');
+        }
+        
+        // Logout
+        async function logout() {
+            await fetch('/api/logout', { method: 'POST' });
+            window.location.href = '/';
+        }
+        
+        // Utilities
+        function getProjectIcon(type) {
+            const icons = {
+                web: '🌐',
+                game: '🎮',
+                tool: '🔧',
+                other: '✨'
+            };
+            return icons[type] || '📁';
+        }
+        
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            const now = new Date();
+            const diff = now - date;
+            
+            if (diff < 60000) return 'just now';
+            if (diff < 3600000) return Math.floor(diff / 60000) + ' minutes ago';
+            if (diff < 86400000) return Math.floor(diff / 3600000) + ' hours ago';
+            if (diff < 604800000) return Math.floor(diff / 86400000) + ' days ago';
+            
+            return date.toLocaleDateString();
+        }
+        
+        // Initialize
+        loadUserData();
+    </script>
+</body>
+</html>

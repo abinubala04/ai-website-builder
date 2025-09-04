@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI That REALLY Learns - Database Edition</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0f0f0f;
+            color: #ffffff;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .main-container {
+            width: 95%;
+            max-width: 1400px;
+            display: grid;
+            grid-template-columns: 1fr 400px;
+            gap: 20px;
+            height: 90vh;
+        }
+        
+        .chat-section {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .status-bar {
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 10px;
+            padding: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #666;
+        }
+        
+        .status-dot.online {
+            background: #4ade80;
+            box-shadow: 0 0 10px #4ade80;
+        }
+        
+        .chat-container {
+            flex: 1;
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        
+        .chat-header {
+            background: #2563eb;
+            padding: 20px;
+            text-align: center;
+        }
+        
+        .chat-header h2 {
+            font-size: 24px;
+            margin-bottom: 5px;
+        }
+        
+        .chat-header p {
+            opacity: 0.9;
+            font-size: 14px;
+        }
+        
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .message {
+            padding: 12px 16px;
+            border-radius: 18px;
+            max-width: 80%;
+            word-wrap: break-word;
+        }
+        
+        .user-message {
+            align-self: flex-end;
+            background: #2563eb;
+            color: white;
+        }
+        
+        .ai-message {
+            align-self: flex-start;
+            background: #374151;
+            color: white;
+        }
+        
+        .system-message {
+            align-self: center;
+            background: #065f46;
+            color: #6ee7b7;
+            font-size: 14px;
+            text-align: center;
+            max-width: 90%;
+            border: 1px solid #10b981;
+        }
+        
+        .chat-input {
+            display: flex;
+            padding: 20px;
+            gap: 10px;
+            border-top: 1px solid #333;
+        }
+        
+        .chat-input input {
+            flex: 1;
+            background: #374151;
+            border: 1px solid #4b5563;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 25px;
+            font-size: 16px;
+            outline: none;
+        }
+        
+        .chat-input input:focus {
+            border-color: #2563eb;
+        }
+        
+        .chat-input button {
+            padding: 12px 24px;
+            background: #2563eb;
+            color: white;
+            border: none;
+            border-radius: 25px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        
+        .chat-input button:hover {
+            background: #1d4ed8;
+        }
+        
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .panel {
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 10px;
+            padding: 20px;
+        }
+        
+        .panel h3 {
+            color: #3b82f6;
+            margin-bottom: 15px;
+            font-size: 18px;
+        }
+        
+        .teach-form {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .teach-form input {
+            background: #374151;
+            border: 1px solid #4b5563;
+            color: white;
+            padding: 10px;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+        
+        .teach-form button {
+            background: #10b981;
+            color: white;
+            border: none;
+            padding: 10px;
+            border-radius: 8px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        
+        .teach-form button:hover {
+            background: #059669;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .stat-box {
+            background: #374151;
+            padding: 10px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        
+        .stat-number {
+            font-size: 24px;
+            font-weight: bold;
+            color: #3b82f6;
+        }
+        
+        .stat-label {
+            font-size: 12px;
+            color: #9ca3af;
+        }
+        
+        .learning-feed {
+            flex: 1;
+            overflow-y: auto;
+            max-height: 300px;
+        }
+        
+        .feed-item {
+            background: #374151;
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 8px;
+            font-size: 14px;
+            border-left: 3px solid #10b981;
+        }
+        
+        .feed-trigger {
+            color: #60a5fa;
+            font-weight: bold;
+        }
+        
+        .feed-response {
+            color: #6ee7b7;
+        }
+        
+        .feed-meta {
+            font-size: 12px;
+            color: #6b7280;
+            margin-top: 5px;
+        }
+        
+        .proof-banner {
+            background: #065f46;
+            border: 1px solid #10b981;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 10px;
+            text-align: center;
+        }
+        
+        .proof-banner h4 {
+            color: #6ee7b7;
+            margin-bottom: 10px;
+        }
+        
+        .proof-steps {
+            text-align: left;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+        
+        @media (max-width: 768px) {
+            .main-container {
+                grid-template-columns: 1fr;
+                height: auto;
+            }
+            
+            .sidebar {
+                order: -1;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="main-container">
+        <div class="chat-section">
+            <div class="status-bar">
+                <div class="status-indicator">
+                    <span class="status-dot" id="statusDot"></span>
+                    <span id="statusText">Connecting to server...</span>
+                </div>
+                <div id="userInfo">
+                    User: <span id="userName">Anonymous</span>
+                </div>
+            </div>
+            
+            <div class="chat-container">
+                <div class="chat-header">
+                    <h2>🌐 Global AI Brain</h2>
+                    <p>Real Database • Shared Learning • Multiple Users</p>
+                </div>
+                
+                <div class="chat-messages" id="messages">
+                    <div class="message ai-message">
+                        Welcome! I learn from everyone and remember everything. Teach me something!
+                    </div>
+                </div>
+                
+                <div class="chat-input">
+                    <input type="text" id="userInput" placeholder="Chat or test what others taught me..." autofocus>
+                    <button onclick="sendMessage()">Send</button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="sidebar">
+            <div class="panel">
+                <h3>👤 Your Identity</h3>
+                <input type="text" id="userNameInput" placeholder="Enter your name..." style="width: 100%; margin-bottom: 10px;">
+                <button onclick="setUserName()" style="width: 100%; background: #3b82f6;">Set Name</button>
+            </div>
+            
+            <div class="panel">
+                <h3>🎓 Teach the Global Brain</h3>
+                <div class="teach-form">
+                    <input type="text" id="teachTrigger" placeholder="When someone says...">
+                    <input type="text" id="teachResponse" placeholder="I should respond...">
+                    <button onclick="teachPattern()">Teach Everyone</button>
+                </div>
+            </div>
+            
+            <div class="panel">
+                <h3>📊 Global Statistics</h3>
+                <div class="stats-grid">
+                    <div class="stat-box">
+                        <div class="stat-number" id="totalPatterns">0</div>
+                        <div class="stat-label">Patterns</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-number" id="totalTeachers">0</div>
+                        <div class="stat-label">Teachers</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-number" id="totalUses">0</div>
+                        <div class="stat-label">Uses</div>
+                    </div>
+                </div>
+                
+                <h4 style="margin-top: 15px; margin-bottom: 10px;">🔄 Live Learning Feed</h4>
+                <div class="learning-feed" id="learningFeed">
+                    <p style="color: #6b7280; text-align: center;">Loading patterns...</p>
+                </div>
+            </div>
+            
+            <div class="panel proof-banner">
+                <h4>🧪 Proof This is Real</h4>
+                <div class="proof-steps">
+                    1. Open this in another browser<br>
+                    2. Teach it something unique<br>
+                    3. Watch it appear here instantly<br>
+                    4. Test it in both browsers<br>
+                    <strong style="color: #6ee7b7;">= Real shared learning!</strong>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Configuration
+        const API_URL = 'http://localhost:3000/api';
+        let userName = localStorage.getItem('ai-username') || 'Anonymous';
+        let eventSource = null;
+        
+        // Update username display
+        document.getElementById('userName').textContent = userName;
+        document.getElementById('userNameInput').value = userName;
+        
+        // Set user name
+        function setUserName() {
+            const input = document.getElementById('userNameInput');
+            userName = input.value.trim() || 'Anonymous';
+            localStorage.setItem('ai-username', userName);
+            document.getElementById('userName').textContent = userName;
+            addMessage('Name updated to: ' + userName, 'system');
+        }
+        
+        // Connect to server
+        async function connectToServer() {
+            try {
+                // Test connection
+                const response = await fetch(API_URL + '/patterns');
+                if (response.ok) {
+                    document.getElementById('statusDot').classList.add('online');
+                    document.getElementById('statusText').textContent = 'Connected to global brain';
+                    
+                    // Load initial data
+                    loadPatterns();
+                    updateStats();
+                    
+                    // Connect to real-time updates
+                    connectToEvents();
+                } else {
+                    throw new Error('Server not responding');
+                }
+            } catch (error) {
+                document.getElementById('statusText').textContent = 'Server offline - Start learning-server.js';
+                addMessage('⚠️ Cannot connect to server. Make sure to run: node learning-server.js', 'system');
+            }
+        }
+        
+        // Connect to server-sent events
+        function connectToEvents() {
+            eventSource = new EventSource(API_URL + '/events');
+            
+            eventSource.onmessage = (event) => {
+                const data = JSON.parse(event.data);
+                
+                if (data.type === 'new-pattern') {
+                    addMessage(`💡 ${data.pattern.taughtBy} just taught me: "${data.pattern.trigger}" → "${data.pattern.response}"`, 'system');
+                    loadPatterns();
+                    updateStats();
+                }
+            };
+            
+            eventSource.onerror = () => {
+                document.getElementById('statusDot').classList.remove('online');
+                document.getElementById('statusText').textContent = 'Connection lost - Reconnecting...';
+                setTimeout(connectToServer, 3000);
+            };
+        }
+        
+        // Send message
+        async function sendMessage() {
+            const input = document.getElementById('userInput');
+            const message = input.value.trim();
+            
+            if (!message) return;
+            
+            addMessage(message, 'user');
+            input.value = '';
+            
+            try {
+                const response = await fetch(API_URL + '/respond', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message })
+                });
+                
+                const data = await response.json();
+                
+                if (data.matchedPattern) {
+                    addMessage(data.response + ` (taught by ${data.taughtBy})`, 'ai');
+                } else {
+                    addMessage(data.response, 'ai');
+                }
+                
+                updateStats();
+            } catch (error) {
+                addMessage('Error connecting to server. Is it running?', 'system');
+            }
+        }
+        
+        // Teach pattern
+        async function teachPattern() {
+            const triggerInput = document.getElementById('teachTrigger');
+            const responseInput = document.getElementById('teachResponse');
+            
+            const trigger = triggerInput.value.trim();
+            const response = responseInput.value.trim();
+            
+            if (!trigger || !response) {
+                alert('Please fill in both fields!');
+                return;
+            }
+            
+            try {
+                const result = await fetch(API_URL + '/teach', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        trigger, 
+                        response, 
+                        taughtBy: userName 
+                    })
+                });
+                
+                const data = await result.json();
+                
+                if (data.success) {
+                    addMessage(data.message, 'system');
+                    triggerInput.value = '';
+                    responseInput.value = '';
+                    loadPatterns();
+                    updateStats();
+                }
+            } catch (error) {
+                addMessage('Error teaching pattern. Is the server running?', 'system');
+            }
+        }
+        
+        // Load patterns
+        async function loadPatterns() {
+            try {
+                const response = await fetch(API_URL + '/patterns');
+                const patterns = await response.json();
+                
+                const feed = document.getElementById('learningFeed');
+                
+                if (patterns.length === 0) {
+                    feed.innerHTML = '<p style="color: #6b7280; text-align: center;">No patterns learned yet!</p>';
+                    return;
+                }
+                
+                feed.innerHTML = patterns.slice(0, 10).map(pattern => `
+                    <div class="feed-item">
+                        <span class="feed-trigger">"${pattern.trigger}"</span> →
+                        <span class="feed-response">"${pattern.response}"</span>
+                        <div class="feed-meta">
+                            by ${pattern.taught_by} • ${new Date(pattern.taught_at).toLocaleString()}
+                        </div>
+                    </div>
+                `).join('');
+            } catch (error) {
+                console.error('Error loading patterns:', error);
+            }
+        }
+        
+        // Update statistics
+        async function updateStats() {
+            try {
+                const response = await fetch(API_URL + '/stats');
+                const stats = await response.json();
+                
+                document.getElementById('totalPatterns').textContent = stats.total_patterns || 0;
+                document.getElementById('totalTeachers').textContent = stats.total_teachers || 0;
+                document.getElementById('totalUses').textContent = stats.total_uses || 0;
+            } catch (error) {
+                console.error('Error updating stats:', error);
+            }
+        }
+        
+        // Add message to chat
+        function addMessage(text, type) {
+            const messages = document.getElementById('messages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${type}-message`;
+            messageDiv.textContent = text;
+            messages.appendChild(messageDiv);
+            messages.scrollTop = messages.scrollHeight;
+        }
+        
+        // Handle enter key
+        document.getElementById('userInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') sendMessage();
+        });
+        
+        document.getElementById('teachTrigger').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') document.getElementById('teachResponse').focus();
+        });
+        
+        document.getElementById('teachResponse').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') teachPattern();
+        });
+        
+        // Initialize
+        connectToServer();
+        
+        // Console message
+        console.log(`
+🌐 REAL AI WITH DATABASE!
+
+This is the real deal:
+- SQLite database storing patterns
+- Multiple users can teach it
+- Everyone shares the same brain
+- Survives server restarts
+- Real-time updates across browsers
+
+To test:
+1. Open in multiple browsers
+2. Teach something in one
+3. Test it in another
+4. = REAL SHARED LEARNING!
+        `);
+    </script>
+</body>
+</html>

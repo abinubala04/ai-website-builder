@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>AI Builder - Create Apps with Natural Language</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        
+        /* Header */
+        .header {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            padding: 20px 0;
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+        }
+        .nav {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+            color: white;
+        }
+        .nav-links {
+            display: flex;
+            gap: 20px;
+        }
+        .nav-links a {
+            color: white;
+            text-decoration: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            transition: background 0.3s;
+        }
+        .nav-links a:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+        .btn-signup {
+            background: white;
+            color: #667eea !important;
+            font-weight: 500;
+        }
+        
+        /* Hero */
+        .hero {
+            padding: 120px 20px 60px;
+            text-align: center;
+            color: white;
+        }
+        .hero h1 {
+            font-size: 48px;
+            margin-bottom: 20px;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        .hero p {
+            font-size: 20px;
+            margin-bottom: 40px;
+            opacity: 0.9;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        .cta-buttons {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        .btn {
+            padding: 12px 30px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        .btn-primary {
+            background: white;
+            color: #667eea;
+        }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        }
+        .btn-secondary {
+            background: transparent;
+            color: white;
+            border: 2px solid white;
+        }
+        .btn-secondary:hover {
+            background: white;
+            color: #667eea;
+        }
+        
+        /* Demo */
+        .demo {
+            max-width: 1000px;
+            margin: 60px auto;
+            padding: 0 20px;
+        }
+        .browser-mockup {
+            background: #1a1a1a;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+        .browser-bar {
+            background: #2a2a2a;
+            padding: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .browser-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #ff5f57;
+        }
+        .browser-dot:nth-child(2) { background: #ffbd2e; }
+        .browser-dot:nth-child(3) { background: #28ca42; }
+        .demo-content {
+            padding: 20px;
+            background: #0a0a0a;
+            color: white;
+            min-height: 400px;
+        }
+        .demo-chat {
+            background: #1a1a1a;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .demo-message {
+            margin: 10px 0;
+            padding: 10px 15px;
+            border-radius: 8px;
+        }
+        .demo-user {
+            background: #667eea;
+            text-align: right;
+            margin-left: 20%;
+        }
+        .demo-ai {
+            background: #2a2a2a;
+            margin-right: 20%;
+        }
+        
+        /* Features */
+        .features {
+            padding: 80px 20px;
+            background: white;
+        }
+        .features-grid {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 40px;
+            margin-top: 60px;
+        }
+        .feature {
+            text-align: center;
+        }
+        .feature-icon {
+            font-size: 48px;
+            margin-bottom: 20px;
+        }
+        .feature h3 {
+            font-size: 24px;
+            margin-bottom: 15px;
+            color: #333;
+        }
+        .feature p {
+            color: #666;
+            line-height: 1.6;
+        }
+        
+        /* Auth Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+        }
+        .modal.show {
+            display: flex;
+        }
+        .modal-content {
+            background: white;
+            padding: 40px;
+            border-radius: 12px;
+            max-width: 400px;
+            width: 90%;
+            position: relative;
+        }
+        .modal-close {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            font-size: 24px;
+            cursor: pointer;
+            color: #999;
+        }
+        .modal h2 {
+            margin-bottom: 20px;
+            color: #333;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #666;
+        }
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 16px;
+        }
+        .form-group input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        .form-submit {
+            width: 100%;
+            padding: 12px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+        }
+        .form-submit:hover {
+            background: #5a5ed8;
+        }
+        .form-toggle {
+            text-align: center;
+            margin-top: 20px;
+            color: #666;
+        }
+        .form-toggle a {
+            color: #667eea;
+            text-decoration: none;
+        }
+        .error-message {
+            color: #dc3545;
+            margin-top: 10px;
+            font-size: 14px;
+        }
+        .success-message {
+            color: #28a745;
+            margin-top: 10px;
+            font-size: 14px;
+        }
+        
+        /* Footer */
+        .footer {
+            background: #1a1a1a;
+            color: white;
+            padding: 40px 20px;
+            text-align: center;
+        }
+        .footer p {
+            opacity: 0.7;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <nav class="nav">
+            <div class="logo">🚀 AI Builder</div>
+            <div class="nav-links">
+                <a href="#features">Features</a>
+                <a href="#pricing">Pricing</a>
+                <a href="#" onclick="showLogin()">Login</a>
+                <a href="#" onclick="showSignup()" class="btn-signup">Start Free</a>
+            </div>
+        </nav>
+    </header>
+    
+    <!-- Hero -->
+    <section class="hero">
+        <h1>Build Apps by Describing What You Want</h1>
+        <p>No coding required. Just chat with AI and watch your ideas come to life instantly.</p>
+        <div class="cta-buttons">
+            <button class="btn btn-primary" onclick="showSignup()">Start Building Free</button>
+            <a href="#demo" class="btn btn-secondary">See Demo</a>
+        </div>
+    </section>
+    
+    <!-- Demo -->
+    <section class="demo" id="demo">
+        <div class="browser-mockup">
+            <div class="browser-bar">
+                <div class="browser-dot"></div>
+                <div class="browser-dot"></div>
+                <div class="browser-dot"></div>
+            </div>
+            <div class="demo-content">
+                <div class="demo-chat">
+                    <div class="demo-message demo-ai">
+                        👋 Hi! I'm your AI assistant. What would you like to build today?
+                    </div>
+                    <div class="demo-message demo-user">
+                        Create a task tracker with add/remove buttons
+                    </div>
+                    <div class="demo-message demo-ai">
+                        I'll create a task tracker for you! Watch it appear on the right...
+                    </div>
+                </div>
+                <div style="text-align: center; color: #888;">
+                    <p>✨ Code generates instantly</p>
+                    <p>👀 Preview updates in real-time</p>
+                    <p>💾 Everything saves automatically</p>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Features -->
+    <section class="features" id="features">
+        <h2 style="text-align: center; font-size: 36px; margin-bottom: 20px;">Everything You Need</h2>
+        <p style="text-align: center; color: #666; font-size: 18px;">No installation. No API keys. Just sign up and start building.</p>
+        
+        <div class="features-grid">
+            <div class="feature">
+                <div class="feature-icon">💬</div>
+                <h3>Natural Language</h3>
+                <p>Describe what you want in plain English. The AI understands and builds it for you.</p>
+            </div>
+            <div class="feature">
+                <div class="feature-icon">⚡</div>
+                <h3>Instant Preview</h3>
+                <p>See your changes immediately. No compile time, no waiting. Just instant results.</p>
+            </div>
+            <div class="feature">
+                <div class="feature-icon">💾</div>
+                <h3>Auto-Save</h3>
+                <p>Everything saves automatically. Come back anytime and pick up where you left off.</p>
+            </div>
+            <div class="feature">
+                <div class="feature-icon">🎨</div>
+                <h3>Visual Tools</h3>
+                <p>Draw mockups, annotate designs, highlight code. The AI understands visual input too.</p>
+            </div>
+            <div class="feature">
+                <div class="feature-icon">📱</div>
+                <h3>Any Device</h3>
+                <p>Works on desktop, tablet, or phone. Build from anywhere with internet access.</p>
+            </div>
+            <div class="feature">
+                <div class="feature-icon">🚀</div>
+                <h3>Deploy Ready</h3>
+                <p>Export your project or deploy with one click. Share your creations with the world.</p>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Auth Modals -->
+    <div id="signupModal" class="modal">
+        <div class="modal-content">
+            <span class="modal-close" onclick="closeModal('signupModal')">&times;</span>
+            <h2>Start Building for Free</h2>
+            <form id="signupForm" onsubmit="handleSignup(event)">
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" name="email" required placeholder="you@example.com">
+                </div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" name="password" required placeholder="Choose a password">
+                </div>
+                <div class="form-group">
+                    <label>Name (optional)</label>
+                    <input type="text" name="name" placeholder="Your name">
+                </div>
+                <button type="submit" class="form-submit">Create Free Account</button>
+                <div class="form-toggle">
+                    Already have an account? <a href="#" onclick="showLogin()">Login</a>
+                </div>
+                <div id="signupMessage"></div>
+            </form>
+        </div>
+    </div>
+    
+    <div id="loginModal" class="modal">
+        <div class="modal-content">
+            <span class="modal-close" onclick="closeModal('loginModal')">&times;</span>
+            <h2>Welcome Back</h2>
+            <form id="loginForm" onsubmit="handleLogin(event)">
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" name="email" required placeholder="you@example.com">
+                </div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" name="password" required placeholder="Your password">
+                </div>
+                <button type="submit" class="form-submit">Login</button>
+                <div class="form-toggle">
+                    New here? <a href="#" onclick="showSignup()">Create account</a>
+                </div>
+                <div id="loginMessage"></div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Footer -->
+    <footer class="footer">
+        <p>© 2024 AI Builder. Build amazing things without code.</p>
+        <p style="margin-top: 10px;">100 free AI requests per month. No credit card required.</p>
+    </footer>
+    
+    <script>
+        // Modal functions
+        function showSignup() {
+            closeModal('loginModal');
+            document.getElementById('signupModal').classList.add('show');
+        }
+        
+        function showLogin() {
+            closeModal('signupModal');
+            document.getElementById('loginModal').classList.add('show');
+        }
+        
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('show');
+        }
+        
+        // Handle signup
+        async function handleSignup(e) {
+            e.preventDefault();
+            const form = e.target;
+            const messageDiv = document.getElementById('signupMessage');
+            
+            try {
+                const response = await fetch('/api/signup', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        email: form.email.value,
+                        password: form.password.value,
+                        name: form.name.value
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    messageDiv.innerHTML = '<p class="success-message">Account created! Redirecting...</p>';
+                    setTimeout(() => {
+                        window.location.href = data.redirect || '/dashboard';
+                    }, 1000);
+                } else {
+                    messageDiv.innerHTML = `<p class="error-message">${data.error}</p>`;
+                }
+            } catch (error) {
+                messageDiv.innerHTML = '<p class="error-message">Connection error. Please try again.</p>';
+            }
+        }
+        
+        // Handle login
+        async function handleLogin(e) {
+            e.preventDefault();
+            const form = e.target;
+            const messageDiv = document.getElementById('loginMessage');
+            
+            try {
+                const response = await fetch('/api/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        email: form.email.value,
+                        password: form.password.value
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    messageDiv.innerHTML = '<p class="success-message">Logging in...</p>';
+                    setTimeout(() => {
+                        window.location.href = data.redirect || '/dashboard';
+                    }, 500);
+                } else {
+                    messageDiv.innerHTML = `<p class="error-message">${data.error}</p>`;
+                }
+            } catch (error) {
+                messageDiv.innerHTML = '<p class="error-message">Connection error. Please try again.</p>';
+            }
+        }
+        
+        // Close modals when clicking outside
+        window.onclick = function(event) {
+            if (event.target.classList.contains('modal')) {
+                event.target.classList.remove('show');
+            }
+        }
+    </script>
+</body>
+</html>

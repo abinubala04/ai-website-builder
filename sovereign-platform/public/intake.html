@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Your AI-Powered Platform</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .intake-container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            max-width: 600px;
+            width: 100%;
+            padding: 40px;
+            animation: fadeIn 0.5s ease-out;
+        }
+        
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        
+        .header h1 {
+            font-size: 32px;
+            color: #333;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            font-size: 18px;
+            color: #666;
+            line-height: 1.6;
+        }
+        
+        .emoji-header {
+            font-size: 48px;
+            margin-bottom: 20px;
+        }
+        
+        .form-section {
+            margin-bottom: 30px;
+        }
+        
+        .form-section h3 {
+            font-size: 20px;
+            color: #333;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            font-weight: 500;
+            color: #555;
+            margin-bottom: 8px;
+        }
+        
+        input, select, textarea {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+        
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        
+        textarea {
+            resize: vertical;
+            min-height: 120px;
+            font-family: inherit;
+        }
+        
+        .tech-level-options {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        .tech-level-option {
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .tech-level-option:hover {
+            border-color: #667eea;
+            background: #f8f9ff;
+        }
+        
+        .tech-level-option.selected {
+            border-color: #667eea;
+            background: #667eea;
+            color: white;
+        }
+        
+        .tech-level-option .emoji {
+            font-size: 24px;
+            display: block;
+            margin-bottom: 5px;
+        }
+        
+        .example-prompts {
+            margin-top: 10px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            font-size: 14px;
+            color: #666;
+        }
+        
+        .example-prompts strong {
+            color: #333;
+        }
+        
+        .submit-button {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 30px;
+        }
+        
+        .submit-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+        
+        .submit-button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            margin-top: 20px;
+        }
+        
+        .loading.active {
+            display: block;
+        }
+        
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .success-message {
+            display: none;
+            background: #d4edda;
+            color: #155724;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            margin-top: 20px;
+        }
+        
+        .success-message.active {
+            display: block;
+            animation: fadeIn 0.5s ease-out;
+        }
+        
+        .privacy-note {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            font-size: 13px;
+            color: #666;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="intake-container">
+        <div class="header">
+            <div class="emoji-header">🚀✨</div>
+            <h1>Create Your AI-Powered Platform</h1>
+            <p>Tell us what you want to build, and your personal AI agent will create it for you!</p>
+        </div>
+        
+        <form id="intakeForm">
+            <!-- Basic Information -->
+            <div class="form-section">
+                <h3>👤 About You</h3>
+                
+                <div class="form-group">
+                    <label for="name">Your Name</label>
+                    <input type="text" id="name" name="name" required placeholder="John Doe">
+                </div>
+                
+                <div class="form-group">
+                    <label for="email">Email Address</label>
+                    <input type="email" id="email" name="email" required placeholder="john@example.com">
+                </div>
+            </div>
+            
+            <!-- Technical Level -->
+            <div class="form-section">
+                <h3>💻 Your Technical Level</h3>
+                <input type="hidden" id="techLevel" name="techLevel" value="none">
+                
+                <div class="tech-level-options">
+                    <div class="tech-level-option" data-level="none">
+                        <span class="emoji">🌱</span>
+                        <strong>None</strong>
+                        <small>I just want it to work</small>
+                    </div>
+                    <div class="tech-level-option" data-level="beginner">
+                        <span class="emoji">🌿</span>
+                        <strong>Beginner</strong>
+                        <small>I know basics</small>
+                    </div>
+                    <div class="tech-level-option" data-level="intermediate">
+                        <span class="emoji">🌳</span>
+                        <strong>Intermediate</strong>
+                        <small>I can code a bit</small>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- What to Build -->
+            <div class="form-section">
+                <h3>🎯 What Do You Want to Build?</h3>
+                
+                <div class="form-group">
+                    <label for="projectIdea">Describe your idea (be as specific as you like!)</label>
+                    <textarea id="projectIdea" name="projectIdea" required 
+                        placeholder="I want to build a recipe sharing app where people can post their favorite recipes, rate others' recipes, and save their favorites. It should have user accounts and maybe a way to search by ingredients..."></textarea>
+                    
+                    <div class="example-prompts">
+                        <strong>Examples:</strong><br>
+                        • "A todo app with AI that suggests tasks"<br>
+                        • "A blog where AI helps write posts"<br>
+                        • "A marketplace for selling digital art"<br>
+                        • "A learning platform for my students"
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Business Goals -->
+            <div class="form-section">
+                <h3>💰 Your Goals</h3>
+                
+                <div class="form-group">
+                    <label for="businessGoal">What's your main goal?</label>
+                    <select id="businessGoal" name="businessGoal" required>
+                        <option value="">Select a goal...</option>
+                        <option value="personal">Personal project / Learning</option>
+                        <option value="business">Start a business</option>
+                        <option value="nonprofit">Help my community</option>
+                        <option value="client">Build for a client</option>
+                        <option value="prototype">Test an idea quickly</option>
+                    </select>
+                </div>
+            </div>
+            
+            <!-- Communication Style -->
+            <div class="form-section">
+                <h3>🗣️ How Should Your AI Agent Communicate?</h3>
+                
+                <div class="form-group">
+                    <label for="communicationStyle">Choose a style</label>
+                    <select id="communicationStyle" name="communicationStyle" required>
+                        <option value="">Select style...</option>
+                        <option value="friendly">Friendly & Encouraging</option>
+                        <option value="professional">Professional & Direct</option>
+                        <option value="teacher">Patient Teacher</option>
+                        <option value="concise">Just the Facts</option>
+                        <option value="creative">Creative & Fun</option>
+                    </select>
+                </div>
+            </div>
+            
+            <button type="submit" class="submit-button">
+                Create My AI Agent & Platform 🚀
+            </button>
+            
+            <div class="loading">
+                <div class="spinner"></div>
+                <p>Creating your personal AI agent...</p>
+            </div>
+            
+            <div class="success-message" id="successMessage">
+                <h3>🎉 Success!</h3>
+                <p>Your AI agent is being created. Check your email for access!</p>
+            </div>
+        </form>
+        
+        <div class="privacy-note">
+            🔒 Your information is secure. Each user gets their own isolated environment.
+        </div>
+    </div>
+    
+    <script>
+        // Tech level selection
+        document.querySelectorAll('.tech-level-option').forEach(option => {
+            option.addEventListener('click', function() {
+                document.querySelectorAll('.tech-level-option').forEach(opt => {
+                    opt.classList.remove('selected');
+                });
+                this.classList.add('selected');
+                document.getElementById('techLevel').value = this.dataset.level;
+            });
+        });
+        
+        // Set default tech level
+        document.querySelector('[data-level="none"]').click();
+        
+        // Form submission
+        document.getElementById('intakeForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const submitButton = this.querySelector('.submit-button');
+            const loading = this.querySelector('.loading');
+            const successMessage = document.getElementById('successMessage');
+            
+            // Disable button and show loading
+            submitButton.disabled = true;
+            loading.classList.add('active');
+            
+            // Collect form data
+            const formData = {
+                name: document.getElementById('name').value,
+                email: document.getElementById('email').value,
+                techLevel: document.getElementById('techLevel').value,
+                projectIdea: document.getElementById('projectIdea').value,
+                businessGoal: document.getElementById('businessGoal').value,
+                communicationStyle: document.getElementById('communicationStyle').value,
+                timestamp: new Date().toISOString()
+            };
+            
+            try {
+                // Send to backend
+                const response = await fetch('/api/sovereign/create-account', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok) {
+                    // Hide form and show success
+                    this.style.display = 'none';
+                    successMessage.classList.add('active');
+                    
+                    // Store agent info for redirect
+                    localStorage.setItem('agentId', result.agentId);
+                    localStorage.setItem('workspaceId', result.workspaceId);
+                    
+                    // Redirect to workspace after 3 seconds
+                    setTimeout(() => {
+                        window.location.href = `/workspace/${result.workspaceId}`;
+                    }, 3000);
+                } else {
+                    throw new Error(result.error || 'Failed to create account');
+                }
+            } catch (error) {
+                alert('Error: ' + error.message);
+                submitButton.disabled = false;
+                loading.classList.remove('active');
+            }
+        });
+    </script>
+</body>
+</html>

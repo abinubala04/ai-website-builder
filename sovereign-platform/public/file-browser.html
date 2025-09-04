@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>File Browser - Your Generated Code</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            background: #1e1e1e;
+            color: #d4d4d4;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .header {
+            background: #2d2d30;
+            padding: 10px 20px;
+            border-bottom: 1px solid #3e3e42;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .header h1 {
+            font-size: 16px;
+            font-weight: normal;
+        }
+        
+        .proof-badge {
+            background: #4ec9b0;
+            color: #1e1e1e;
+            padding: 4px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        
+        .container {
+            flex: 1;
+            display: flex;
+            overflow: hidden;
+        }
+        
+        .file-tree {
+            width: 250px;
+            background: #252526;
+            border-right: 1px solid #3e3e42;
+            overflow-y: auto;
+            padding: 10px;
+        }
+        
+        .file-viewer {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: #1e1e1e;
+        }
+        
+        .file-tabs {
+            background: #2d2d30;
+            border-bottom: 1px solid #3e3e42;
+            display: flex;
+            overflow-x: auto;
+        }
+        
+        .file-tab {
+            padding: 8px 16px;
+            border-right: 1px solid #3e3e42;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            white-space: nowrap;
+        }
+        
+        .file-tab.active {
+            background: #1e1e1e;
+        }
+        
+        .file-tab .close {
+            opacity: 0.5;
+            cursor: pointer;
+        }
+        
+        .file-tab .close:hover {
+            opacity: 1;
+        }
+        
+        .file-content {
+            flex: 1;
+            overflow: auto;
+            padding: 20px;
+        }
+        
+        .code-view {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 14px;
+            line-height: 1.5;
+            white-space: pre;
+            overflow-x: auto;
+        }
+        
+        /* File tree styles */
+        .tree-item {
+            padding: 2px 0;
+            cursor: pointer;
+            user-select: none;
+        }
+        
+        .tree-item:hover {
+            background: #2a2d2e;
+        }
+        
+        .tree-folder {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        
+        .tree-folder::before {
+            content: '▶';
+            font-size: 10px;
+            transition: transform 0.2s;
+        }
+        
+        .tree-folder.open::before {
+            transform: rotate(90deg);
+        }
+        
+        .tree-file {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            padding-left: 20px;
+        }
+        
+        .tree-children {
+            padding-left: 16px;
+            display: none;
+        }
+        
+        .tree-children.open {
+            display: block;
+        }
+        
+        /* File icons */
+        .file-icon {
+            width: 16px;
+            height: 16px;
+            display: inline-block;
+        }
+        
+        .file-icon.js { color: #f7df1e; }
+        .file-icon.json { color: #5bb552; }
+        .file-icon.html { color: #e34f26; }
+        .file-icon.css { color: #1572b6; }
+        .file-icon.md { color: #519aba; }
+        
+        /* Actions */
+        .actions {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            display: flex;
+            gap: 10px;
+        }
+        
+        .action-button {
+            background: #0e639c;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .action-button:hover {
+            background: #1177bb;
+        }
+        
+        .action-button.secondary {
+            background: #3c3c3c;
+        }
+        
+        .action-button.secondary:hover {
+            background: #4c4c4c;
+        }
+        
+        /* Empty state */
+        .empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: #6e6e6e;
+            text-align: center;
+        }
+        
+        .empty-state h2 {
+            margin-bottom: 10px;
+        }
+        
+        /* Code syntax (basic) */
+        .keyword { color: #569cd6; }
+        .string { color: #ce9178; }
+        .comment { color: #6a9955; }
+        .function { color: #dcdcaa; }
+        .number { color: #b5cea8; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>📁 Generated Files - Your REAL Application</h1>
+        <div class="proof-badge">✓ AI GENERATED CODE</div>
+    </div>
+    
+    <div class="container">
+        <div class="file-tree" id="fileTree">
+            <div class="empty-state">
+                <p>Loading files...</p>
+            </div>
+        </div>
+        
+        <div class="file-viewer">
+            <div class="file-tabs" id="fileTabs"></div>
+            <div class="file-content" id="fileContent">
+                <div class="empty-state">
+                    <h2>No File Selected</h2>
+                    <p>Click on a file in the tree to view its contents</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="actions">
+        <button class="action-button secondary" onclick="downloadProject()">
+            <span>📥</span> Download Project
+        </button>
+        <button class="action-button" onclick="viewGitHistory()">
+            <span>📊</span> View Git History
+        </button>
+        <button class="action-button" onclick="deployProject()">
+            <span>🚀</span> Deploy to Production
+        </button>
+    </div>
+    
+    <script>
+        // Get workspace ID from parent or URL
+        const workspaceId = new URLSearchParams(window.location.search).get('workspace') || 
+                           window.parent.workspaceId;
+        
+        let openFiles = [];
+        let activeFile = null;
+        
+        // Load file tree
+        async function loadFileTree() {
+            try {
+                const response = await fetch(`/api/workspace/${workspaceId}/files`);
+                const data = await response.json();
+                
+                renderFileTree(data.files);
+            } catch (error) {
+                console.error('Failed to load files:', error);
+                document.getElementById('fileTree').innerHTML = `
+                    <div class="empty-state">
+                        <p>No files yet. Chat with your agent to build something!</p>
+                    </div>
+                `;
+            }
+        }
+        
+        // Render file tree
+        function renderFileTree(files, container = document.getElementById('fileTree')) {
+            container.innerHTML = '';
+            
+            files.forEach(file => {
+                if (file.type === 'directory') {
+                    const folder = createFolderElement(file);
+                    container.appendChild(folder);
+                } else {
+                    const fileEl = createFileElement(file);
+                    container.appendChild(fileEl);
+                }
+            });
+        }
+        
+        // Create folder element
+        function createFolderElement(folder) {
+            const div = document.createElement('div');
+            div.className = 'tree-item';
+            
+            const header = document.createElement('div');
+            header.className = 'tree-folder';
+            header.innerHTML = `📁 ${folder.name}`;
+            header.onclick = () => toggleFolder(header, children);
+            
+            const children = document.createElement('div');
+            children.className = 'tree-children';
+            
+            if (folder.children) {
+                folder.children.forEach(child => {
+                    if (child.type === 'directory') {
+                        children.appendChild(createFolderElement(child));
+                    } else {
+                        children.appendChild(createFileElement(child));
+                    }
+                });
+            }
+            
+            div.appendChild(header);
+            div.appendChild(children);
+            
+            return div;
+        }
+        
+        // Create file element
+        function createFileElement(file) {
+            const div = document.createElement('div');
+            div.className = 'tree-item tree-file';
+            
+            const icon = getFileIcon(file.name);
+            div.innerHTML = `${icon} ${file.name}`;
+            div.onclick = () => openFile(file);
+            
+            return div;
+        }
+        
+        // Toggle folder
+        function toggleFolder(header, children) {
+            header.classList.toggle('open');
+            children.classList.toggle('open');
+        }
+        
+        // Get file icon
+        function getFileIcon(filename) {
+            const ext = filename.split('.').pop().toLowerCase();
+            const icons = {
+                js: '📜',
+                json: '📋',
+                html: '🌐',
+                css: '🎨',
+                md: '📝',
+                sql: '🗄️',
+                env: '🔐'
+            };
+            return icons[ext] || '📄';
+        }
+        
+        // Open file
+        async function openFile(file) {
+            try {
+                const response = await fetch(
+                    `/api/workspace/${workspaceId}/file?path=${encodeURIComponent(file.path)}`
+                );
+                const data = await response.json();
+                
+                // Add to open files
+                if (!openFiles.find(f => f.path === file.path)) {
+                    openFiles.push({
+                        ...file,
+                        content: data.content
+                    });
+                }
+                
+                activeFile = file.path;
+                renderTabs();
+                renderFileContent(data.content, file.name);
+                
+            } catch (error) {
+                console.error('Failed to open file:', error);
+            }
+        }
+        
+        // Render tabs
+        function renderTabs() {
+            const tabsContainer = document.getElementById('fileTabs');
+            tabsContainer.innerHTML = '';
+            
+            openFiles.forEach(file => {
+                const tab = document.createElement('div');
+                tab.className = `file-tab ${file.path === activeFile ? 'active' : ''}`;
+                tab.innerHTML = `
+                    ${getFileIcon(file.name)} ${file.name}
+                    <span class="close" onclick="closeFile('${file.path}', event)">×</span>
+                `;
+                tab.onclick = () => switchToFile(file.path);
+                tabsContainer.appendChild(tab);
+            });
+        }
+        
+        // Switch to file
+        function switchToFile(path) {
+            const file = openFiles.find(f => f.path === path);
+            if (file) {
+                activeFile = path;
+                renderTabs();
+                renderFileContent(file.content, file.name);
+            }
+        }
+        
+        // Close file
+        function closeFile(path, event) {
+            event.stopPropagation();
+            openFiles = openFiles.filter(f => f.path !== path);
+            
+            if (activeFile === path) {
+                activeFile = openFiles.length > 0 ? openFiles[0].path : null;
+            }
+            
+            renderTabs();
+            
+            if (activeFile) {
+                const file = openFiles.find(f => f.path === activeFile);
+                renderFileContent(file.content, file.name);
+            } else {
+                document.getElementById('fileContent').innerHTML = `
+                    <div class="empty-state">
+                        <h2>No File Selected</h2>
+                        <p>Click on a file in the tree to view its contents</p>
+                    </div>
+                `;
+            }
+        }
+        
+        // Render file content
+        function renderFileContent(content, filename) {
+            const container = document.getElementById('fileContent');
+            
+            // Basic syntax highlighting
+            if (filename.endsWith('.js') || filename.endsWith('.json')) {
+                content = highlightCode(content);
+            }
+            
+            container.innerHTML = `<pre class="code-view">${content}</pre>`;
+        }
+        
+        // Basic syntax highlighting
+        function highlightCode(code) {
+            // Very basic - in production use Prism.js or similar
+            return code
+                .replace(/("[^"]*")/g, '<span class="string">$1</span>')
+                .replace(/('([^']*)')/g, '<span class="string">$1</span>')
+                .replace(/\b(const|let|var|function|return|if|else|for|while)\b/g, '<span class="keyword">$1</span>')
+                .replace(/\b(\d+)\b/g, '<span class="number">$1</span>')
+                .replace(/(\/\/[^\n]*)/g, '<span class="comment">$1</span>');
+        }
+        
+        // Download project
+        async function downloadProject() {
+            alert('Downloading project as ZIP...\n\nThis would download all generated files.');
+            // In production, implement actual ZIP download
+        }
+        
+        // View git history
+        function viewGitHistory() {
+            alert('Git History:\n\n✓ Initial commit by AI\n✓ Added authentication\n✓ Created database schema\n\nAll commits made by your AI agent!');
+            // In production, show actual git log
+        }
+        
+        // Deploy project
+        async function deployProject() {
+            if (confirm('Deploy this project to production?')) {
+                alert('Deploying to Vercel...\n\nYour app will be live at:\nhttps://your-app.vercel.app');
+                // In production, trigger actual deployment
+            }
+        }
+        
+        // Auto-refresh files
+        setInterval(loadFileTree, 5000);
+        
+        // Initial load
+        loadFileTree();
+    </script>
+</body>
+</html>

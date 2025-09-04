@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My AI Chat - With Memory!</title>
+    <style>
+        /* Same styles as before */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: #f0f2f5;
+        }
+        
+        .chat-container {
+            width: 90%;
+            max-width: 500px;
+            height: 600px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        
+        .chat-header {
+            background: #9b59b6;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .message {
+            padding: 10px 15px;
+            border-radius: 18px;
+            max-width: 80%;
+            word-wrap: break-word;
+        }
+        
+        .user-message {
+            align-self: flex-end;
+            background: #9b59b6;
+            color: white;
+        }
+        
+        .ai-message {
+            align-self: flex-start;
+            background: #e9ecef;
+            color: #333;
+        }
+        
+        .chat-input {
+            display: flex;
+            padding: 20px;
+            border-top: 1px solid #e9ecef;
+            gap: 10px;
+        }
+        
+        input {
+            flex: 1;
+            padding: 10px 15px;
+            border: 1px solid #ddd;
+            border-radius: 25px;
+            font-size: 16px;
+            outline: none;
+        }
+        
+        input:focus {
+            border-color: #9b59b6;
+        }
+        
+        button {
+            padding: 10px 20px;
+            background: #9b59b6;
+            color: white;
+            border: none;
+            border-radius: 25px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        
+        button:hover {
+            background: #8e44ad;
+        }
+        
+        .typing {
+            display: none;
+            align-self: flex-start;
+            padding: 10px 15px;
+            background: #e9ecef;
+            border-radius: 18px;
+            margin: 10px 0;
+        }
+        
+        .typing span {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #999;
+            margin: 0 2px;
+            animation: typing 1.4s infinite;
+        }
+        
+        .typing span:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+        
+        .typing span:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+        
+        @keyframes typing {
+            0%, 60%, 100% {
+                transform: translateY(0);
+            }
+            30% {
+                transform: translateY(-10px);
+            }
+        }
+        
+        .info-banner {
+            background: #e2d5f1;
+            color: #6c4a86;
+            padding: 10px;
+            text-align: center;
+            font-size: 14px;
+        }
+        
+        .memory-indicator {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #333;
+            color: #0f0;
+            padding: 10px;
+            border-radius: 5px;
+            font-family: monospace;
+            font-size: 12px;
+            max-width: 200px;
+        }
+        
+        .memory-item {
+            margin: 2px 0;
+            font-size: 11px;
+            opacity: 0.8;
+        }
+    </style>
+</head>
+<body>
+    <div class="chat-container">
+        <div class="chat-header">
+            <h2>🧠💭 My AI Assistant</h2>
+            <p style="font-size: 14px; opacity: 0.9;">Version 3: Now with Memory!</p>
+        </div>
+        
+        <div class="info-banner">
+            🎯 I remember our conversation! Tell me your name, favorite color, or anything else!
+        </div>
+        
+        <div class="chat-messages" id="messages">
+            <div class="message ai-message">
+                Hi! I now have memory - I'll remember things you tell me during our conversation. What's your name?
+            </div>
+        </div>
+        
+        <div class="typing" id="typing">
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+        
+        <div class="chat-input">
+            <input type="text" id="userInput" placeholder="Tell me about yourself..." autofocus>
+            <button onclick="sendMessage()">Send</button>
+        </div>
+    </div>
+    
+    <div class="memory-indicator" id="memory">
+        <strong>AI Memory:</strong>
+        <div id="memoryContent">
+            <div class="memory-item">• No memories yet</div>
+        </div>
+    </div>
+
+    <script>
+        // VERSION 3: AI with Memory!
+        // Now we remember things about the user and the conversation
+        
+        class SmartAI {
+            constructor() {
+                // Our memory bank
+                this.memory = {
+                    userName: null,
+                    favoriteColor: null,
+                    interests: [],
+                    facts: [],
+                    conversationCount: 0,
+                    lastTopic: null
+                };
+                
+                // Enhanced patterns with memory integration
+                this.patterns = [
+                    {
+                        keywords: ['my name is', "i'm ", 'i am ', 'call me'],
+                        handler: (input) => {
+                            // Extract name from input
+                            const nameMatch = input.match(/(?:my name is|i'm|i am|call me)\s+(\w+)/i);
+                            if (nameMatch) {
+                                this.memory.userName = nameMatch[1];
+                                this.updateMemoryDisplay();
+                                return `Nice to meet you, ${this.memory.userName}! I'll remember your name.`;
+                            }
+                            return "What's your name? I'd love to remember it!";
+                        }
+                    },
+                    {
+                        keywords: ['what is my name', 'do you remember me', 'who am i'],
+                        handler: (input) => {
+                            if (this.memory.userName) {
+                                return `Of course I remember you, ${this.memory.userName}!`;
+                            }
+                            return "I don't know your name yet. What should I call you?";
+                        }
+                    },
+                    {
+                        keywords: ['favorite color is', 'i like the color', 'i love'],
+                        handler: (input) => {
+                            const colorMatch = input.match(/(?:favorite color is|like the color|love)\s+(\w+)/i);
+                            if (colorMatch) {
+                                this.memory.favoriteColor = colorMatch[1];
+                                this.updateMemoryDisplay();
+                                return `${this.memory.favoriteColor} is a great color! I'll remember that's your favorite.`;
+                            }
+                            return this.defaultResponse(input);
+                        }
+                    },
+                    {
+                        keywords: ['remember', 'don\'t forget'],
+                        handler: (input) => {
+                            const fact = input.replace(/remember|don't forget|that/gi, '').trim();
+                            if (fact) {
+                                this.memory.facts.push(fact);
+                                this.updateMemoryDisplay();
+                                return `I'll remember that: "${fact}". I won't forget!`;
+                            }
+                            return "What would you like me to remember?";
+                        }
+                    },
+                    {
+                        keywords: ['what do you remember', 'what do you know about me'],
+                        handler: (input) => {
+                            let response = "Here's what I remember about you:\n";
+                            
+                            if (this.memory.userName) {
+                                response += `• Your name is ${this.memory.userName}\n`;
+                            }
+                            if (this.memory.favoriteColor) {
+                                response += `• Your favorite color is ${this.memory.favoriteColor}\n`;
+                            }
+                            if (this.memory.interests.length > 0) {
+                                response += `• You're interested in: ${this.memory.interests.join(', ')}\n`;
+                            }
+                            if (this.memory.facts.length > 0) {
+                                response += `• Things you told me: ${this.memory.facts.join('; ')}\n`;
+                            }
+                            
+                            if (response === "Here's what I remember about you:\n") {
+                                return "I haven't learned much about you yet. Tell me more!";
+                            }
+                            
+                            return response;
+                        }
+                    },
+                    {
+                        keywords: ['interested in', 'i like', 'hobby', 'love to'],
+                        handler: (input) => {
+                            const interestMatch = input.match(/(?:interested in|i like|hobby|love to)\s+(.+)/i);
+                            if (interestMatch) {
+                                const interest = interestMatch[1].replace(/[.,!?]$/, '');
+                                if (!this.memory.interests.includes(interest)) {
+                                    this.memory.interests.push(interest);
+                                    this.updateMemoryDisplay();
+                                }
+                                return `That's awesome that you're into ${interest}! Tell me more about it.`;
+                            }
+                            return this.defaultResponse(input);
+                        }
+                    },
+                    {
+                        keywords: ['hello', 'hi', 'hey'],
+                        handler: (input) => {
+                            if (this.memory.userName) {
+                                return `Hello again, ${this.memory.userName}! Good to see you.`;
+                            }
+                            return "Hello! I don't think we've met properly. What's your name?";
+                        }
+                    },
+                    {
+                        keywords: ['how are you'],
+                        handler: (input) => {
+                            this.memory.conversationCount++;
+                            if (this.memory.conversationCount > 3) {
+                                return "I'm doing great! We've been having a nice conversation. How are you?";
+                            }
+                            return "I'm doing well, thank you for asking! How about you?";
+                        }
+                    }
+                ];
+                
+                // Default responses
+                this.defaultResponses = [
+                    "That's interesting! Tell me more.",
+                    "I see. What else is on your mind?",
+                    "Fascinating! Please continue.",
+                    "I'm learning so much about you!",
+                    "Thanks for sharing that with me."
+                ];
+            }
+            
+            respond(input) {
+                const lowerInput = input.toLowerCase();
+                
+                // Track conversation
+                this.memory.conversationCount++;
+                
+                // Check patterns with handlers
+                for (const pattern of this.patterns) {
+                    if (pattern.keywords.some(keyword => lowerInput.includes(keyword))) {
+                        return pattern.handler(input);
+                    }
+                }
+                
+                // Use contextual default response
+                return this.contextualResponse(input);
+            }
+            
+            contextualResponse(input) {
+                // Add personalization based on memory
+                let response = this.defaultResponse(input);
+                
+                if (this.memory.userName && Math.random() > 0.7) {
+                    response = `${response.slice(0, -1)}, ${this.memory.userName}.`;
+                }
+                
+                return response;
+            }
+            
+            defaultResponse(input) {
+                return this.defaultResponses[Math.floor(Math.random() * this.defaultResponses.length)];
+            }
+            
+            updateMemoryDisplay() {
+                const memoryDiv = document.getElementById('memoryContent');
+                let html = '';
+                
+                if (this.memory.userName) {
+                    html += `<div class="memory-item">• Name: ${this.memory.userName}</div>`;
+                }
+                if (this.memory.favoriteColor) {
+                    html += `<div class="memory-item">• Fav color: ${this.memory.favoriteColor}</div>`;
+                }
+                if (this.memory.interests.length > 0) {
+                    html += `<div class="memory-item">• Interests: ${this.memory.interests.join(', ')}</div>`;
+                }
+                if (this.memory.facts.length > 0) {
+                    this.memory.facts.forEach(fact => {
+                        html += `<div class="memory-item">• Remembers: "${fact.substring(0, 30)}..."</div>`;
+                    });
+                }
+                if (html === '') {
+                    html = '<div class="memory-item">• No memories yet</div>';
+                }
+                
+                memoryDiv.innerHTML = html;
+            }
+        }
+        
+        // Create our AI with memory
+        const ai = new SmartAI();
+        
+        // Handle enter key
+        document.getElementById('userInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+        
+        function sendMessage() {
+            const input = document.getElementById('userInput');
+            const message = input.value.trim();
+            
+            if (!message) return;
+            
+            // Add user message
+            addMessage(message, 'user');
+            
+            // Clear input
+            input.value = '';
+            
+            // Show typing indicator
+            const typing = document.getElementById('typing');
+            typing.style.display = 'block';
+            
+            // Simulate thinking time
+            setTimeout(() => {
+                typing.style.display = 'none';
+                
+                // Get AI response with memory
+                const response = ai.respond(message);
+                
+                // Add AI response
+                addMessage(response, 'ai');
+            }, 300 + Math.random() * 700); // 0.3-1 seconds
+        }
+        
+        function addMessage(text, sender) {
+            const messages = document.getElementById('messages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${sender}-message`;
+            messageDiv.textContent = text;
+            messages.appendChild(messageDiv);
+            
+            // Scroll to bottom
+            messages.scrollTop = messages.scrollHeight;
+        }
+        
+        // Developer console message
+        console.log(`
+🧠 Level Up! Your AI now has MEMORY!
+
+Version 3 Features:
+- Remembers your name
+- Tracks your interests
+- Stores facts you tell it
+- Contextual responses
+- Visual memory indicator
+
+Try these:
+- "My name is [Your Name]"
+- "My favorite color is blue"
+- "Remember that I like pizza"
+- "What do you remember about me?"
+
+Watch the memory indicator update in real-time!
+
+Next: We'll connect to a real backend...
+        `);
+    </script>
+</body>
+</html>

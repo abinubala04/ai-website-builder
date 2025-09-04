@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stage 2: Shared AI (Database)</title>
+    <style>
+        body {
+            font-family: -apple-system, sans-serif;
+            max-width: 1000px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        
+        .stage-header {
+            background: #ff9f43;
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .improvements {
+            background: #fff4e6;
+            border: 2px solid #ff9f43;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        
+        .problems {
+            background: #ffe0e0;
+            border: 2px solid #ff6b6b;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        
+        .main-container {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 20px;
+        }
+        
+        .chat-container {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .stats-panel {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            height: fit-content;
+        }
+        
+        .messages {
+            height: 300px;
+            overflow-y: auto;
+            border: 1px solid #eee;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 5px;
+        }
+        
+        .message {
+            margin: 10px 0;
+            padding: 8px 12px;
+            border-radius: 15px;
+        }
+        
+        .user-message {
+            background: #007aff;
+            color: white;
+            text-align: right;
+            margin-left: 20%;
+        }
+        
+        .ai-message {
+            background: #e9ecef;
+            margin-right: 20%;
+        }
+        
+        .input-area {
+            display: flex;
+            gap: 10px;
+        }
+        
+        input {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        
+        button {
+            padding: 10px 20px;
+            background: #007aff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        
+        button:hover {
+            background: #0056b3;
+        }
+        
+        .teach-panel {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+        
+        .pattern-list {
+            max-height: 200px;
+            overflow-y: auto;
+            margin-top: 10px;
+        }
+        
+        .pattern-item {
+            background: white;
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 5px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .delete-btn {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 3px;
+            font-size: 12px;
+            cursor: pointer;
+        }
+        
+        .stat-box {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+            text-align: center;
+        }
+        
+        .stat-number {
+            font-size: 24px;
+            font-weight: bold;
+            color: #ff9f43;
+        }
+        
+        .next-stage {
+            background: #28a745;
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            margin-top: 20px;
+        }
+        
+        .next-stage a {
+            color: white;
+            font-weight: bold;
+        }
+        
+        .warning {
+            background: #fff3cd;
+            border: 1px solid #ffeeba;
+            color: #856404;
+            padding: 10px;
+            border-radius: 5px;
+            margin-top: 10px;
+        }
+        
+        .danger-zone {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="stage-header">
+        <h1>Stage 2: Shared AI 🌍</h1>
+        <p>With database persistence - Now it works for everyone!</p>
+    </div>
+    
+    <div class="improvements">
+        <div>
+            <h3>✅ What's Better:</h3>
+            <ul>
+                <li>Works across ALL browsers</li>
+                <li>Friends can use your patterns</li>
+                <li>Survives server restarts</li>
+                <li>Can see global statistics</li>
+            </ul>
+        </div>
+        <div>
+            <h3>❌ New Problems:</h3>
+            <ul>
+                <li>ANYONE can delete patterns</li>
+                <li>No user separation</li>
+                <li>Trolls can teach bad things</li>
+                <li>No way to have private AI</li>
+            </ul>
+        </div>
+    </div>
+    
+    <div class="main-container">
+        <div>
+            <div class="chat-container">
+                <h2>Shared Global AI</h2>
+                <div class="messages" id="messages">
+                    <div class="message ai-message">
+                        Hi! I'm a shared AI. Everyone teaches me, and I remember for everyone!
+                    </div>
+                </div>
+                <div class="input-area">
+                    <input type="text" id="userInput" placeholder="Chat with shared AI..." autofocus>
+                    <button onclick="sendMessage()">Send</button>
+                </div>
+            </div>
+            
+            <div class="teach-panel">
+                <h3>🎓 Teach the Global AI</h3>
+                <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+                    <input type="text" id="trigger" placeholder="When anyone says...">
+                    <input type="text" id="response" placeholder="I respond...">
+                    <button onclick="teachPattern()">Teach Everyone</button>
+                </div>
+                <div class="warning">
+                    ⚠️ Warning: Everyone can see and use these patterns. There's no privacy!
+                </div>
+                <h4>Global Patterns:</h4>
+                <div class="pattern-list" id="patterns">
+                    Loading patterns...
+                </div>
+            </div>
+        </div>
+        
+        <div>
+            <div class="stats-panel">
+                <h3>📊 Global Statistics</h3>
+                <div class="stat-box">
+                    <div class="stat-number" id="patternCount">0</div>
+                    <div>Total Patterns</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-number" id="chatCount">0</div>
+                    <div>Total Chats</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-number" id="useCount">0</div>
+                    <div>Pattern Uses</div>
+                </div>
+            </div>
+            
+            <div class="danger-zone">
+                <h3>⚠️ The Problem:</h3>
+                <p>Try this:</p>
+                <ol>
+                    <li>Teach a pattern</li>
+                    <li>Click the ❌ to delete it</li>
+                    <li>Anyone can do this!</li>
+                </ol>
+                <p><strong>This is why we need user accounts!</strong></p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="next-stage">
+        <h2>😰 Getting trolled? Need private patterns?</h2>
+        <p>Someone deleted all your patterns? Want your own AI space?</p>
+        <p>You need <strong>Stage 3: Multi-User AI with Authentication</strong></p>
+        <a href="../stage-3-users/README.md">→ See how to add user accounts</a>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:3000/api';
+        
+        // Load patterns on start
+        loadPatterns();
+        loadStats();
+        
+        // Refresh stats every 5 seconds
+        setInterval(loadStats, 5000);
+        
+        async function sendMessage() {
+            const input = document.getElementById('userInput');
+            const message = input.value.trim();
+            if (!message) return;
+            
+            addMessage(message, 'user');
+            input.value = '';
+            
+            try {
+                const response = await fetch(API_URL + '/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message })
+                });
+                
+                const data = await response.json();
+                addMessage(data.response, 'ai');
+                
+                // Reload stats to show usage
+                loadStats();
+            } catch (error) {
+                addMessage('Error: Is the server running? Run: node server.js', 'ai');
+            }
+        }
+        
+        async function teachPattern() {
+            const trigger = document.getElementById('trigger').value.trim();
+            const response = document.getElementById('response').value.trim();
+            
+            if (!trigger || !response) {
+                alert('Please fill in both fields!');
+                return;
+            }
+            
+            try {
+                const result = await fetch(API_URL + '/teach', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ trigger, response })
+                });
+                
+                const data = await result.json();
+                addMessage(data.message, 'ai');
+                
+                document.getElementById('trigger').value = '';
+                document.getElementById('response').value = '';
+                
+                loadPatterns();
+                loadStats();
+            } catch (error) {
+                alert('Error teaching pattern. Is the server running?');
+            }
+        }
+        
+        async function loadPatterns() {
+            try {
+                const response = await fetch(API_URL + '/patterns');
+                const patterns = await response.json();
+                
+                const container = document.getElementById('patterns');
+                if (patterns.length === 0) {
+                    container.innerHTML = '<p style="color: #666;">No patterns yet. Be the first to teach!</p>';
+                    return;
+                }
+                
+                container.innerHTML = patterns.map(p => `
+                    <div class="pattern-item">
+                        <div>
+                            <strong>"${p.trigger}"</strong> → "${p.response}"
+                            <small style="color: #666;"> (used ${p.use_count} times)</small>
+                        </div>
+                        <button class="delete-btn" onclick="deletePattern(${p.id})">❌</button>
+                    </div>
+                `).join('');
+            } catch (error) {
+                document.getElementById('patterns').innerHTML = 
+                    '<p style="color: red;">Cannot connect to server. Run: node server.js</p>';
+            }
+        }
+        
+        async function deletePattern(id) {
+            if (!confirm('Delete this pattern? (Anyone can do this - that\'s the problem!)')) return;
+            
+            try {
+                await fetch(API_URL + '/patterns/' + id, { method: 'DELETE' });
+                loadPatterns();
+                loadStats();
+                addMessage('Pattern deleted. Anyone could have done this!', 'ai');
+            } catch (error) {
+                alert('Error deleting pattern');
+            }
+        }
+        
+        async function loadStats() {
+            try {
+                const response = await fetch(API_URL + '/stats');
+                const stats = await response.json();
+                
+                document.getElementById('patternCount').textContent = stats.total_patterns || 0;
+                document.getElementById('chatCount').textContent = stats.total_chats || 0;
+                document.getElementById('useCount').textContent = stats.total_uses || 0;
+            } catch (error) {
+                // Server might be down
+            }
+        }
+        
+        function addMessage(text, type) {
+            const messages = document.getElementById('messages');
+            const div = document.createElement('div');
+            div.className = `message ${type}-message`;
+            div.textContent = text;
+            messages.appendChild(div);
+            messages.scrollTop = messages.scrollHeight;
+        }
+        
+        // Enter key
+        document.getElementById('userInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') sendMessage();
+        });
+        
+        console.log(`
+🌍 STAGE 2: SHARED BUT VULNERABLE
+
+The good:
+✅ Real database persistence
+✅ Works across all browsers
+✅ Shared knowledge
+
+The bad:
+❌ Anyone can delete patterns
+❌ No privacy
+❌ No user separation
+❌ Trolls can ruin it
+
+This is why real apps need authentication!
+        `);
+    </script>
+</body>
+</html>

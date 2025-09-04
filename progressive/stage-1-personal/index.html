@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stage 1: Personal AI (Browser Only)</title>
+    <style>
+        body {
+            font-family: -apple-system, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        
+        .stage-header {
+            background: #ff6b6b;
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .limitations {
+            background: #ffe0e0;
+            border: 2px solid #ff6b6b;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        
+        .chat-container {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        
+        .messages {
+            height: 300px;
+            overflow-y: auto;
+            border: 1px solid #eee;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 5px;
+        }
+        
+        .message {
+            margin: 10px 0;
+            padding: 8px 12px;
+            border-radius: 15px;
+        }
+        
+        .user-message {
+            background: #007aff;
+            color: white;
+            text-align: right;
+            margin-left: 20%;
+        }
+        
+        .ai-message {
+            background: #e9ecef;
+            margin-right: 20%;
+        }
+        
+        .input-area {
+            display: flex;
+            gap: 10px;
+        }
+        
+        input {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        
+        button {
+            padding: 10px 20px;
+            background: #007aff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        
+        button:hover {
+            background: #0056b3;
+        }
+        
+        .teach-panel {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .teach-panel h3 {
+            margin-top: 0;
+        }
+        
+        .next-stage {
+            background: #28a745;
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+        }
+        
+        .next-stage a {
+            color: white;
+            font-weight: bold;
+        }
+        
+        .warning {
+            background: #fff3cd;
+            border: 1px solid #ffeeba;
+            color: #856404;
+            padding: 10px;
+            border-radius: 5px;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="stage-header">
+        <h1>Stage 1: Personal AI 🏠</h1>
+        <p>Basic LLM with browser storage - What most tutorials give you</p>
+    </div>
+    
+    <div class="limitations">
+        <h3>⚠️ Current Limitations:</h3>
+        <ul>
+            <li>❌ Only works in THIS browser</li>
+            <li>❌ Can't share with friends</li>
+            <li>❌ No backup if you clear browser data</li>
+            <li>❌ Can't use on your phone</li>
+            <li>❌ No way for customers to use it</li>
+        </ul>
+    </div>
+    
+    <div class="chat-container">
+        <h2>Your Personal AI Assistant</h2>
+        <div class="messages" id="messages">
+            <div class="message ai-message">
+                Hi! I'm your personal AI. I can learn patterns, but only in this browser.
+            </div>
+        </div>
+        <div class="input-area">
+            <input type="text" id="userInput" placeholder="Chat with your AI..." autofocus>
+            <button onclick="sendMessage()">Send</button>
+        </div>
+    </div>
+    
+    <div class="teach-panel">
+        <h3>🎓 Teach Your AI</h3>
+        <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+            <input type="text" id="trigger" placeholder="When I say...">
+            <input type="text" id="response" placeholder="You respond...">
+            <button onclick="teachPattern()">Teach</button>
+        </div>
+        <div id="patterns"></div>
+        <div class="warning">
+            ⚠️ Warning: These patterns only exist in this browser. If you open an incognito window or use another device, they'll be gone!
+        </div>
+    </div>
+    
+    <div class="next-stage">
+        <h2>😕 Want to share your AI with others?</h2>
+        <p>Your friend tries your AI... but it doesn't know any of your patterns!</p>
+        <p>You need <strong>Stage 2: Shared AI with a Database</strong></p>
+        <a href="../stage-2-shared/README.md">→ See how to add persistence</a>
+    </div>
+
+    <script>
+        // Stage 1: Basic LLM with localStorage only
+        class PersonalAI {
+            constructor() {
+                this.patterns = this.loadPatterns();
+                this.displayPatterns();
+            }
+            
+            respond(input) {
+                const lower = input.toLowerCase();
+                
+                // Check learned patterns
+                for (const pattern of this.patterns) {
+                    if (lower.includes(pattern.trigger.toLowerCase())) {
+                        return pattern.response;
+                    }
+                }
+                
+                // Default responses
+                if (lower.includes('hello')) return "Hi there!";
+                if (lower.includes('how are you')) return "I'm doing well, thanks!";
+                
+                return "I don't know how to respond to that. Teach me!";
+            }
+            
+            teach(trigger, response) {
+                this.patterns.push({ trigger, response });
+                this.savePatterns();
+                this.displayPatterns();
+            }
+            
+            savePatterns() {
+                localStorage.setItem('ai-patterns', JSON.stringify(this.patterns));
+            }
+            
+            loadPatterns() {
+                const saved = localStorage.getItem('ai-patterns');
+                return saved ? JSON.parse(saved) : [];
+            }
+            
+            displayPatterns() {
+                const container = document.getElementById('patterns');
+                if (this.patterns.length === 0) {
+                    container.innerHTML = '<p style="color: #666;">No patterns learned yet.</p>';
+                    return;
+                }
+                
+                container.innerHTML = '<h4>Learned Patterns (in this browser only):</h4>' +
+                    this.patterns.map(p => 
+                        `<div style="background: white; padding: 8px; margin: 5px 0; border-radius: 5px;">
+                            "${p.trigger}" → "${p.response}"
+                        </div>`
+                    ).join('');
+            }
+        }
+        
+        const ai = new PersonalAI();
+        
+        function sendMessage() {
+            const input = document.getElementById('userInput');
+            const message = input.value.trim();
+            if (!message) return;
+            
+            addMessage(message, 'user');
+            const response = ai.respond(message);
+            addMessage(response, 'ai');
+            
+            input.value = '';
+        }
+        
+        function teachPattern() {
+            const trigger = document.getElementById('trigger').value.trim();
+            const response = document.getElementById('response').value.trim();
+            
+            if (!trigger || !response) {
+                alert('Please fill in both fields!');
+                return;
+            }
+            
+            ai.teach(trigger, response);
+            document.getElementById('trigger').value = '';
+            document.getElementById('response').value = '';
+            
+            addMessage(`Learned: "${trigger}" → "${response}"`, 'ai');
+        }
+        
+        function addMessage(text, type) {
+            const messages = document.getElementById('messages');
+            const div = document.createElement('div');
+            div.className = `message ${type}-message`;
+            div.textContent = text;
+            messages.appendChild(div);
+            messages.scrollTop = messages.scrollHeight;
+        }
+        
+        // Enter key handling
+        document.getElementById('userInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') sendMessage();
+        });
+        
+        // Show the problem
+        console.log(`
+⚠️ STAGE 1 LIMITATIONS:
+
+Try this test:
+1. Teach your AI: "pizza" → "yummy!"
+2. Open an incognito window
+3. Go to the same page
+4. Type "pizza"
+5. It won't know the response!
+
+This is because localStorage is:
+- Per browser
+- Per domain  
+- Not shared
+- Easily lost
+
+Ready for Stage 2? You need a database!
+        `);
+    </script>
+</body>
+</html>

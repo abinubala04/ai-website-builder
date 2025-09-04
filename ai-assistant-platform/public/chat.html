@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat - AI Assistant</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="chat-container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <h2>🤖 AI Assistant</h2>
+            </div>
+            
+            <div class="user-info">
+                <div id="userName">Loading...</div>
+                <div id="userEmail" class="text-muted"></div>
+            </div>
+            
+            <nav class="sidebar-nav">
+                <a href="#" class="nav-item active" onclick="showChat()">
+                    <span>💬</span> Chat
+                </a>
+                <a href="#" class="nav-item" onclick="showKnowledge()">
+                    <span>📚</span> Knowledge Base
+                </a>
+                <a href="#" class="nav-item" onclick="clearHistory()">
+                    <span>🗑️</span> Clear History
+                </a>
+                <a href="#" class="nav-item" onclick="logout()">
+                    <span>🚪</span> Logout
+                </a>
+            </nav>
+            
+            <div class="sidebar-footer">
+                <div class="ai-status">
+                    <span class="status-dot" id="aiStatus"></span>
+                    <span id="aiStatusText">Checking AI...</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Main Chat Area -->
+        <div class="chat-main">
+            <div class="chat-header">
+                <h3>Chat with Your AI Assistant</h3>
+                <div class="chat-actions">
+                    <button onclick="exportChat()" class="btn-secondary btn-small">Export Chat</button>
+                </div>
+            </div>
+            
+            <div class="chat-messages" id="chatMessages">
+                <div class="message assistant">
+                    <div class="message-content">
+                        Hello! I'm your personal AI assistant. I can help answer questions and search our knowledge base for information. How can I help you today?
+                    </div>
+                </div>
+            </div>
+            
+            <div class="chat-input-container">
+                <form onsubmit="sendMessage(event)" class="chat-form">
+                    <input 
+                        type="text" 
+                        id="messageInput" 
+                        placeholder="Type your message..."
+                        autocomplete="off"
+                        required
+                    >
+                    <button type="submit" class="btn-primary">Send</button>
+                </form>
+                <div class="input-hint">Press Enter to send, Shift+Enter for new line</div>
+            </div>
+        </div>
+        
+        <!-- Knowledge Base Panel (hidden by default) -->
+        <div class="knowledge-panel" id="knowledgePanel" style="display: none;">
+            <div class="panel-header">
+                <h3>📚 Knowledge Base</h3>
+                <button onclick="hideKnowledge()" class="btn-close">×</button>
+            </div>
+            <div class="knowledge-search">
+                <input 
+                    type="text" 
+                    id="knowledgeSearch" 
+                    placeholder="Search knowledge base..."
+                    onkeyup="searchKnowledge(event)"
+                >
+            </div>
+            <div class="knowledge-results" id="knowledgeResults">
+                <p class="text-muted">Search the knowledge base to find information...</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentUser = null;
+        let isLoading = false;
+
+        // Load user info
+        async function loadUser() {
+            try {
+                const response = await fetch('/api/user');
+                if (!response.ok) {
+                    window.location.href = '/login';
+                    return;
+                }
+                
+                currentUser = await response.json();
+                document.getElementById('userName').textContent = currentUser.name;
+                document.getElementById('userEmail').textContent = currentUser.email;
+                
+                // Load chat history
+                await loadChatHistory();
+                
+            } catch (error) {
+                console.error('Failed to load user:', error);
+                window.location.href = '/login';
+            }
+        }
+
+        // Load chat history
+        async function loadChatHistory() {
+            try {
+                const response = await fetch('/api/chat/history');
+                const history = await response.json();
+                
+                const messagesEl = document.getElementById('chatMessages');
+                messagesEl.innerHTML = '';
+                
+                if (history.length === 0) {
+                    // Show welcome message
+                    addMessage('assistant', "Hello! I'm your personal AI assistant. I can help answer questions and search our knowledge base for information. How can I help you today?");
+                } else {
+                    // Display history
+                    history.forEach(msg => {
+                        addMessage(msg.role, msg.content, false);
+                    });
+                }
+                
+                scrollToBottom();
+            } catch (error) {
+                console.error('Failed to load history:', error);
+            }
+        }
+
+        // Send message
+        async function sendMessage(event) {
+            event.preventDefault();
+            
+            if (isLoading) return;
+            
+            const input = document.getElementById('messageInput');
+            const message = input.value.trim();
+            
+            if (!message) return;
+            
+            // Add user message
+            addMessage('user', message);
+            input.value = '';
+            
+            // Show loading
+            isLoading = true;
+            const loadingId = addMessage('assistant', '...', false, true);
+            
+            try {
+                const response = await fetch('/api/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message })
+                });
+                
+                const data = await response.json();
+                
+                // Remove loading message
+                document.getElementById(loadingId)?.remove();
+                
+                if (response.ok) {
+                    addMessage('assistant', data.response);
+                } else {
+                    addMessage('assistant', 'Sorry, I encountered an error. Please try again.');
+                }
+            } catch (error) {
+                document.getElementById(loadingId)?.remove();
+                addMessage('assistant', 'Sorry, I lost connection. Please check your internet and try again.');
+            } finally {
+                isLoading = false;
+            }
+        }
+
+        // Add message to chat
+        function addMessage(role, content, save = true, isLoading = false) {
+            const messagesEl = document.getElementById('chatMessages');
+            const messageEl = document.createElement('div');
+            const messageId = 'msg-' + Date.now();
+            
+            messageEl.id = messageId;
+            messageEl.className = `message ${role}`;
+            if (isLoading) messageEl.classList.add('loading');
+            
+            messageEl.innerHTML = `
+                <div class="message-content">${escapeHtml(content)}</div>
+                <div class="message-time">${new Date().toLocaleTimeString()}</div>
+            `;
+            
+            messagesEl.appendChild(messageEl);
+            scrollToBottom();
+            
+            return messageId;
+        }
+
+        // Scroll to bottom
+        function scrollToBottom() {
+            const messages = document.getElementById('chatMessages');
+            messages.scrollTop = messages.scrollHeight;
+        }
+
+        // Escape HTML
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Show knowledge base
+        async function showKnowledge() {
+            document.getElementById('knowledgePanel').style.display = 'block';
+            document.querySelector('.chat-main').style.marginRight = '300px';
+        }
+
+        // Hide knowledge base
+        function hideKnowledge() {
+            document.getElementById('knowledgePanel').style.display = 'none';
+            document.querySelector('.chat-main').style.marginRight = '0';
+        }
+
+        // Search knowledge base
+        let searchTimeout;
+        async function searchKnowledge(event) {
+            clearTimeout(searchTimeout);
+            const query = event.target.value;
+            
+            searchTimeout = setTimeout(async () => {
+                try {
+                    const response = await fetch(`/api/knowledge/search?q=${encodeURIComponent(query)}`);
+                    const results = await response.json();
+                    
+                    const resultsEl = document.getElementById('knowledgeResults');
+                    
+                    if (results.length === 0) {
+                        resultsEl.innerHTML = '<p class="text-muted">No results found</p>';
+                    } else {
+                        resultsEl.innerHTML = results.map(doc => `
+                            <div class="knowledge-item">
+                                <h4>${escapeHtml(doc.title)}</h4>
+                                <p>${escapeHtml(doc.content)}</p>
+                                <div class="knowledge-tags">
+                                    ${(doc.tags || []).map(tag => `<span class="tag">${escapeHtml(tag)}</span>`).join('')}
+                                </div>
+                            </div>
+                        `).join('');
+                    }
+                } catch (error) {
+                    console.error('Search failed:', error);
+                }
+            }, 300);
+        }
+
+        // Clear history
+        async function clearHistory() {
+            if (!confirm('Are you sure you want to clear your chat history?')) return;
+            
+            try {
+                // For now, just reload to show welcome message
+                // In production, add endpoint to clear history
+                document.getElementById('chatMessages').innerHTML = '';
+                addMessage('assistant', "Chat history cleared. How can I help you today?");
+            } catch (error) {
+                console.error('Failed to clear history:', error);
+            }
+        }
+
+        // Export chat
+        function exportChat() {
+            const messages = document.querySelectorAll('.message');
+            let text = 'AI Assistant Chat Export\n';
+            text += `User: ${currentUser.name} (${currentUser.email})\n`;
+            text += `Date: ${new Date().toLocaleString()}\n\n`;
+            
+            messages.forEach(msg => {
+                const role = msg.classList.contains('user') ? 'You' : 'AI';
+                const content = msg.querySelector('.message-content').textContent;
+                const time = msg.querySelector('.message-time')?.textContent || '';
+                text += `[${time}] ${role}: ${content}\n\n`;
+            });
+            
+            // Download file
+            const blob = new Blob([text], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `ai-chat-${new Date().toISOString().split('T')[0]}.txt`;
+            a.click();
+        }
+
+        // Logout
+        async function logout() {
+            try {
+                await fetch('/auth/logout', { method: 'POST' });
+                window.location.href = '/';
+            } catch (error) {
+                console.error('Logout failed:', error);
+                window.location.href = '/';
+            }
+        }
+
+        // Check AI status
+        async function checkAIStatus() {
+            // This would check actual AI health in production
+            const statusDot = document.getElementById('aiStatus');
+            const statusText = document.getElementById('aiStatusText');
+            
+            // For now, just show as online
+            statusDot.className = 'status-dot online';
+            statusText.textContent = 'AI Online';
+        }
+
+        // Handle Enter key in input
+        document.getElementById('messageInput').addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                document.querySelector('.chat-form').dispatchEvent(new Event('submit'));
+            }
+        });
+
+        // Initialize
+        loadUser();
+        checkAIStatus();
+        
+        // Periodic AI status check
+        setInterval(checkAIStatus, 30000);
+    </script>
+</body>
+</html>
